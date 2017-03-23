@@ -15,11 +15,12 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import org.apache.commons.configuration.PropertiesConfiguration
 
 import scala.util.{Success, Try}
+import scala.xml.Elem
 
 object Command extends App  {
   import scala.language.reflectiveCalls
@@ -31,10 +32,32 @@ object Command extends App  {
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
     case Some(cmd @ opts.status) => Success("")
+    case Some(cmd @ opts.ls) => Success("")
+    case Some(cmd @ opts.rm) => Success("")
     case _ => throw new IllegalArgumentException(s"Unknown command: ${opts.subcommand}")
       Try { "Unknown command" }
   }
 
   result.map(msg => println(s"OK: $msg"))
     .onError(e => println(s"FAILED: ${e.getMessage}"))
+
+
+  def ls(path: Path): Try[String] = {
+
+
+
+    ???
+  }
+
+  def getUsers(parent: Elem): Seq[String] = {
+
+    ???
+  }
+
+  def getCollections(parent: Elem): Seq[String] = {
+
+
+    ???
+  }
+
 }

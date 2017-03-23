@@ -33,8 +33,10 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
             |
             |Usage:
             |
-            |$printedName status [--user <arg>]
-            |$printedName remove <path>
+            |$printedName [-u, --user <user>] status
+            |$printedName ls <path>
+            |$printedName rm <path>
+            |$printedName add ...
             |
             |Options:
             |""".stripMargin)
@@ -45,12 +47,22 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
 
   val status = new Subcommand("status") {
     descr("Retrieve the status of content offered for ingestion into Springfield")
-    val bag: ScallopOption[String] = opt[String](name = "user",
+    val user: ScallopOption[String] = opt[String](name = "user",
       descr = "limit to videos owned by this user")
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(status)
-
+  val ls = new Subcommand("ls") {
+    descr("List items under <path>")
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(ls)
+  val rm = new Subcommand("rm") {
+    descr("Output Springfield actions to remove the item at <path>. Typically you would redirect the output to a text file with the extension .xml," +
+      "which would then be placed in the Springfield inbox to effectuate the removal.")
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(rm)
   footer("")
 }
 
