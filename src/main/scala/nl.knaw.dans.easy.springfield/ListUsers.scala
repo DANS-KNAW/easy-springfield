@@ -13,6 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.scalatest.{FlatSpec, Matchers, OneInstancePerTest}
+package nl.knaw.dans.easy.springfield
 
-trait TestSupportFixture extends FlatSpec with Matchers with OneInstancePerTest
+import scala.xml.Elem
+
+trait ListUsers {
+
+  def listUsers(parent: Elem): Seq[String] = {
+    for {
+      user <- parent \ "user"
+      if user.attribute("id").isDefined
+    } yield user.attribute("id").get.head.text
+  }
+}

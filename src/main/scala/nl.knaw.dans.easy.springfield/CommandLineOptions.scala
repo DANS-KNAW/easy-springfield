@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,11 +52,14 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(status)
-  val ls = new Subcommand("ls") {
-    descr("List items under <path>")
+  val listUsers = new Subcommand("list-users") {
+    descr("List users in a given domain")
+    val domain: ScallopOption[String] = trailArg[String](name = "domain",
+      descr = "the domain of which to list the users",
+      default = Some("dans"))
     footer(SUBCOMMAND_SEPARATOR)
   }
-  addSubcommand(ls)
+  addSubcommand(listUsers)
   val rm = new Subcommand("rm") {
     descr("Output Springfield actions to remove the item at <path>. Typically you would redirect the output to a text file with the extension .xml," +
       "which would then be placed in the Springfield inbox to effectuate the removal.")

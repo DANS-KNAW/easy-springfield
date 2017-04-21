@@ -7,7 +7,7 @@ Tools for managing a Springfield WebTV server
 SYNOPSIS
 --------
 
-    easy-springfield ls <path>
+    easy-springfield lsusers 
     easy-springfield rm <path> > springfield-actions.xml
     easy-springfield add ... > springfield-actions.xml
     
