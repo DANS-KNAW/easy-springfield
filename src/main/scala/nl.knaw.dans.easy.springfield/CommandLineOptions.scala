@@ -33,7 +33,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
             |
             |Usage:
             |
-            |$printedName [-u, --user <user>] status
+            |$printedName status [-d, --domain <domain>] [-u, --user <user>]
             |$printedName ls <path>
             |$printedName rm <path>
             |$printedName add ...
@@ -47,8 +47,12 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
 
   val status = new Subcommand("status") {
     descr("Retrieve the status of content offered for ingestion into Springfield")
+    val domain: ScallopOption[String] = opt[String](name = "domain",
+      descr = "limit to videos within this domain",
+      default = Some("dans"))
     val user: ScallopOption[String] = opt[String](name = "user",
       descr = "limit to videos owned by this user")
+
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(status)

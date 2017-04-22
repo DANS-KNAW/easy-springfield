@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import nl.knaw.dans.easy.springfield.ListUsers
+package nl.knaw.dans.easy.springfield
 
 class ListUsersSpec extends TestSupportFixture with ListUsers {
   "listUsers" should "return Seq of user names" in {

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fsxml>
+    <properties>
+        <depth>10</depth>
+        <start>0</start>
+        <limit>-1</limit>
+        <totalResultsAvailable>10</totalResultsAvailable>
+        <totalResultsReturned>10</totalResultsReturned>
+    </properties>
+    <video id="11">
+        <properties>
+            <private>false</private>
+            <screenshot>
+                http://.noterik.com/domain/dans/user/AVA_producties/video/11/shots/1/h/0/m/0/sec5.jpg
+            </screenshot>
+        </properties>
+        <rawvideo id="1">
+            <properties>
+                <extension>mp4</extension>
+                <original>true</original>
+                <framerate>25.0</framerate>
+                <format>unknown</format>
+                <metadata_file>/springfield/flanders/temp/1475849682004.dat</metadata_file>
+                <filesize>191187730</filesize>
+                <mount>dans</mount>
+                <audiocodec>mp4a</audiocodec>
+                <duration>2653.359989</duration>
+                <filename>GV_AVA_doven_09.mp4</filename>
+                <pixelaspect>0.0</pixelaspect>
+                <audiobitrate>79895</audiobitrate>
+                <width>512</width>
+                <videobitrate>496622</videobitrate>
+                <videocodec>h264</videocodec>
+                <audiochannels>2</audiochannels>
+                <status>done</status>
+                <height>288</height>
+                <samplerate>44100</samplerate>
+            </properties>
+        </rawvideo>
+        <rawvideo id="2">
+            <properties>
+                <extension>mp4</extension>
+                <transferred>false</transferred>
+                <batchfile>html5_h264</batchfile>
+                <framerate>25.0</framerate>
+                <filesize>114479226</filesize>
+                <wantedkeyframerate>25</wantedkeyframerate>
+                <audiocodec>mp4a</audiocodec>
+                <wantedaudiobitrate>64000</wantedaudiobitrate>
+                <duration>2653.36</duration>
+                <pixelaspect>0.0</pixelaspect>
+                <wantedheight>720</wantedheight>
+                <height>288</height>
+                <samplerate>48000</samplerate>
+                <format>H.264</format>
+                <metadata_file>/springfield/flanders/temp/1475854453894.dat</metadata_file>
+                <mount>dans</mount>
+                <filename>GV_AVA_doven_09.mp4</filename>
+                <audiobitrate>64400</audiobitrate>
+                <wantedframerate>25</wantedframerate>
+                <reencode>false</reencode>
+                <width>512</width>
+                <videobitrate>280806</videobitrate>
+                <wantedwidth>1280</wantedwidth>
+                <job>/domain/dans/service/momar/queue/high/job/191</job>
+                <videocodec>h264</videocodec>
+                <audiochannels>2</audiochannels>
+                <wantedbitrate>800000</wantedbitrate>
+                <status>done</status>
+            </properties>
+        </rawvideo>
+        <screens id="1">
+            <properties>
+                <size>320x240</size>
+                <interval>1</interval>
+                <useraw>2</useraw>
+                <redo>false</redo>
+                <uri>http://.noterik.com/domain/dans/user/AVA_producties/video/11/shots/1</uri>
+                <rawvideo>/domain/dans/user/AVA_producties/video/11/rawvideo/2</rawvideo>
+            </properties>
+        </screens>
+    </video>
+</fsxml>

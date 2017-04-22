@@ -20,13 +20,14 @@ import java.nio.file.Paths
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.util.{Success, Try}
+import nl.knaw.dans.lib.error._
 
 object Command extends App
   with DebugEnhancedLogging
   with EasySpringfieldApp
   with Smither2Xml
-  with ListUsers {
-
+  with ListUsers
+  with GetStatus {
   import scala.language.reflectiveCalls
 
   type FeedBackMessage = String
@@ -37,15 +38,34 @@ object Command extends App
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
     case Some(cmd @ opts.status) =>
-      Success("")
+      val TABS = "%-35s %-40s %-10s\n"
+      val maybeList =
+        if (cmd.user.toOption.isDefined) {
+          getStatusSummaries(cmd.domain(), cmd.user())
+            .map(_.map(s => TABS format (s.user, s.filename, s.status.toUpperCase)).mkString)
+        }
+        else {
+          getUserList(cmd.domain())
+            .map {
+              _.map {
+                user =>
+                  getStatusSummaries(cmd.domain(), user)
+                    .map(_.map(s => TABS format (s.user, s.filename, s.status.toUpperCase)).mkString)
+                    .recover { case _ => TABS format (user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
+              }.mkString
+            }
+        }
+
+      maybeList.map {
+        list =>
+          "\n" +
+            (TABS format("USER", "FILE", "STATUS")) +
+            (TABS format("=" * "USER".length, "=" * "FILE".length, "=" * "STATUS".length)) +
+            list
+      }
     case Some(cmd @ opts.listUsers) =>
       debug("Calling list-users")
-      val result = for {
-        xml <- getSmithers2Xml(Paths.get("domain", cmd.domain(), "user"))
-        users <- Try { listUsers(xml) }
-        _ = debug(s"Retrieved users: ${users}")
-      } yield users
-      result.map(_.mkString(", "))
+      getUserList(cmd.domain()).map(_.mkString(", "))
     case Some(cmd @ opts.rm) => Success("")
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
@@ -53,4 +73,20 @@ object Command extends App
 
   result.map(msg => println(s"OK: $msg"))
     .onError(e => println(s"FAILED: ${ e.getMessage }"))
+
+  private def getUserList(domain: String): Try[Seq[String]] = {
+    for {
+      xml <- getSmithers2Xml(Paths.get("domain", domain, "user"))
+      users <- Try { listUsers(xml) }
+    } yield users
+  }
+
+  private def getStatusSummaries(domain: String, user: String): Try[Seq[VideoStatusSummary]] = {
+    for {
+      xml <- getSmithers2Xml(Paths.get("domain", domain, "user", user, "video"))
+      summaries <- Try { getStatus(user, xml) }
+      _ = debug(s"Retrieved status summaries: $summaries")
+    } yield summaries
+  }
+
 }

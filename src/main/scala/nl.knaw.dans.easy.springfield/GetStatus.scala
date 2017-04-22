@@ -15,6 +15,19 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import org.scalatest.{FlatSpec, Matchers, OneInstancePerTest}
+import scala.xml.Elem
 
-trait TestSupportFixture extends FlatSpec with Matchers with OneInstancePerTest
+case class VideoStatusSummary(user: String, filename: String, status: String)
+
+trait GetStatus {
+
+  def getStatus(forUser: String, parent: Elem): Seq[VideoStatusSummary] = {
+    for {
+      video <- parent \ "video"
+      raw2 <- video \ "rawvideo"
+      if raw2 \@ "id" == "2"
+      filename <- raw2 \ "properties" \ "filename"
+      status = raw2 \ "properties" \ "status"
+    } yield  VideoStatusSummary(forUser, filename.text, if (status.isEmpty) "waiting" else status.head.text)
+  }
+}
