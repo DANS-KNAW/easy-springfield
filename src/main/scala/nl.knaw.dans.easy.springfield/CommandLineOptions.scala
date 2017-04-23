@@ -27,49 +27,59 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   printedName = "easy-springfield"
   private val _________ = " " * printedName.length
   private val SUBCOMMAND_SEPARATOR = "---\n"
-  version(s"$printedName v${Version()}")
-  banner(s"""
-            |Manage Springfield Web TV
-            |
+  version(s"$printedName v${ Version() }")
+  banner(
+    s"""
+       |Manage Springfield Web TV
+       |
             |Usage:
-            |
+       |
             |$printedName status [-d, --domain <domain>] [-u, --user <user>]
-            |$printedName ls <path>
-            |$printedName rm <path>
-            |$printedName add ...
-            |
+       |$printedName ls <path>
+       |$printedName rm <path>
+       |$printedName add ...
+       |
             |Options:
-            |""".stripMargin)
+       |""".stripMargin)
 
 
   private implicit val fileConverter = singleArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
-  private def resolveTildeToHomeDir(s: String): String = if (s.startsWith("~")) s.replaceFirst("~", System.getProperty("user.home")) else s
+
+  private def resolveTildeToHomeDir(s: String): String =
+    if (s.startsWith("~")) s.replaceFirst("~", System.getProperty("user.home"))
+    else s
 
   val status = new Subcommand("status") {
     descr("Retrieve the status of content offered for ingestion into Springfield")
-    val domain: ScallopOption[String] = opt[String](name = "domain",
+    val domain: ScallopOption[String] = opt(name = "domain",
       descr = "limit to videos within this domain",
       default = Some("dans"))
-    val user: ScallopOption[String] = opt[String](name = "user",
+    val user: ScallopOption[String] = opt(name = "user",
       descr = "limit to videos owned by this user")
 
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(status)
+
   val listUsers = new Subcommand("list-users") {
     descr("List users in a given domain")
-    val domain: ScallopOption[String] = trailArg[String](name = "domain",
+    val domain: ScallopOption[String] = trailArg(name = "domain",
       descr = "the domain of which to list the users",
       default = Some("dans"))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(listUsers)
-  val rm = new Subcommand("rm") {
-    descr("Output Springfield actions to remove the item at <path>. Typically you would redirect the output to a text file with the extension .xml," +
-      "which would then be placed in the Springfield inbox to effectuate the removal.")
+
+  val delete = new Subcommand("delete") {
+    descr("Delete the item at the specified Springfield path")
+    val path: ScallopOption[Path] = trailArg(name = "path",
+      descr = "the path pointing item to remove")
+    val withReferencedItems: ScallopOption[Boolean] = opt(name = "with-referenced-items", short = 'r',
+      descr = "also remove items reference from <path>, recursively")
     footer(SUBCOMMAND_SEPARATOR)
   }
-  addSubcommand(rm)
+  addSubcommand(delete)
+
   footer("")
 }
 

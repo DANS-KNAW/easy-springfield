@@ -15,23 +15,23 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-
-import scala.util.{Success, Try}
 import nl.knaw.dans.lib.error._
+import scala.io.StdIn
+import scala.util.{Failure, Success, Try}
 
 object Command extends App
   with DebugEnhancedLogging
   with EasySpringfieldApp
-  with Smither2Xml
+  with Smithers2
   with ListUsers
   with GetStatus {
+
   import scala.language.reflectiveCalls
 
   type FeedBackMessage = String
-
 
   val opts = CommandLineOptions(args, properties)
   opts.verify()
@@ -42,7 +42,7 @@ object Command extends App
       val maybeList =
         if (cmd.user.toOption.isDefined) {
           getStatusSummaries(cmd.domain(), cmd.user())
-            .map(_.map(s => TABS format (s.user, s.filename, s.status.toUpperCase)).mkString)
+            .map(_.map(s => TABS format(s.user, s.filename, s.status.toUpperCase)).mkString)
         }
         else {
           getUserList(cmd.domain())
@@ -50,8 +50,8 @@ object Command extends App
               _.map {
                 user =>
                   getStatusSummaries(cmd.domain(), user)
-                    .map(_.map(s => TABS format (s.user, s.filename, s.status.toUpperCase)).mkString)
-                    .recover { case _ => TABS format (user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
+                    .map(_.map(s => TABS format(s.user, s.filename, s.status.toUpperCase)).mkString)
+                    .recover { case _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
               }.mkString
             }
         }
@@ -66,7 +66,13 @@ object Command extends App
     case Some(cmd @ opts.listUsers) =>
       debug("Calling list-users")
       getUserList(cmd.domain()).map(_.mkString(", "))
-    case Some(cmd @ opts.rm) => Success("")
+    case Some(cmd @ opts.delete) =>
+      for {
+        list <- if (cmd.withReferencedItems()) getReferencedPaths(cmd.path()).map(_ :+ cmd.path())
+                else Success(Seq(cmd.path()))
+        _ <- approveDeletion(list)
+        _ <- list.map(deletePath).collectResults
+      } yield "Items deleted"
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }
@@ -76,17 +82,24 @@ object Command extends App
 
   private def getUserList(domain: String): Try[Seq[String]] = {
     for {
-      xml <- getSmithers2Xml(Paths.get("domain", domain, "user"))
+      xml <- getXmlFromPath(Paths.get("domain", domain, "user"))
       users <- Try { listUsers(xml) }
     } yield users
   }
 
   private def getStatusSummaries(domain: String, user: String): Try[Seq[VideoStatusSummary]] = {
     for {
-      xml <- getSmithers2Xml(Paths.get("domain", domain, "user", user, "video"))
+      xml <- getXmlFromPath(Paths.get("domain", domain, "user", user, "video"))
       summaries <- Try { getStatus(user, xml) }
       _ = debug(s"Retrieved status summaries: $summaries")
     } yield summaries
   }
 
+  private def approveDeletion(list: Seq[Path]): Try[Seq[Path]] = {
+    println("The following items will be deleted:")
+    list.foreach(println)
+    print("OK? (y/n): ")
+    if (StdIn.readLine().toLowerCase == "y") Success(list)
+    else Failure(new Exception("User aborted delete"))
+  }
 }
