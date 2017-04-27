@@ -1,15 +1,16 @@
 easy-springfield
 ================
 
-Tools for managing a Springfield WebTV server
+Tools for managing a Springfield WebTV server.
 
 
 SYNOPSIS
 --------
 
-    easy-springfield lsusers 
-    easy-springfield rm <path> > springfield-actions.xml
-    easy-springfield add ... > springfield-actions.xml
+    easy-springfield list-users 
+    easy-springfield status [-u, --user <arg>][-, --domain <arg>] 
+    easy-springfield delete [-r, --with-referenced-items] <path>
+    easy-springfield create-add-actions <videos-csv> > springfield-actions.xml   
     
     
 DESCRIPTION

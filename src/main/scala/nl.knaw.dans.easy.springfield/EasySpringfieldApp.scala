@@ -16,14 +16,20 @@
 package nl.knaw.dans.easy.springfield
 
 import java.net.URI
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 
-trait EasySpringfieldApp extends DebugEnhancedLogging with Smithers2 with ListUsers {
+trait EasySpringfieldApp {
+  this: DebugEnhancedLogging
+    with Smithers2
+    with ListUsers
+    with CreateAddActions =>
   val properties = new PropertiesConfiguration(Paths.get(System.getProperty("app.home")).resolve("cfg/application.properties").toFile)
   val smithers2BaseUri: URI = new URI(properties.getString("springfield.smithers2.base-uri"))
   val smithers2ConnectionTimeoutMs: Int = properties.getInt("springfield.smithers2-connection-timeout-ms")
   val smithers2ReadTimoutMs: Int = properties.getInt("springfield.smithers2-read-timeout-ms")
+  val sourceVideos: Path = Paths.get(properties.getString("springfield.default-videos-folder"))
+
 }

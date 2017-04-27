@@ -19,15 +19,18 @@ import java.nio.file.{Path, Paths}
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.error._
+
 import scala.io.StdIn
 import scala.util.{Failure, Success, Try}
+import scala.xml.PrettyPrinter
 
 object Command extends App
   with DebugEnhancedLogging
   with EasySpringfieldApp
   with Smithers2
   with ListUsers
-  with GetStatus {
+  with GetStatus
+  with CreateAddActions {
 
   import scala.language.reflectiveCalls
 
@@ -73,12 +76,21 @@ object Command extends App
         _ <- approveDeletion(list)
         _ <- list.map(deletePath).collectResults
       } yield "Items deleted"
+    case Some(cmd @ opts.createAddActions) =>
+      val result = for {
+        videos <- parseCsv(cmd.videosCsv())
+        actions <- createAddActions(videos)
+      } yield new PrettyPrinter(160, 2).format(actions)
+      result.map { s =>
+        println(s)
+        "XML generated"
+      }
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }
 
-  result.map(msg => println(s"OK: $msg"))
-    .onError(e => println(s"FAILED: ${ e.getMessage }"))
+  result.map(msg => Console.err.println(s"OK: $msg"))
+    .onError(e => Console.err.println(s"FAILED: ${ e.getMessage }"))
 
   private def getUserList(domain: String): Try[Seq[String]] = {
     for {

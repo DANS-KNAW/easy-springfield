@@ -80,6 +80,27 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   }
   addSubcommand(delete)
 
+  val createAddActions = new Subcommand("create-add-actions") {
+    descr(
+      """Create Springfield Actions XML containing add-actions for items specified in a CSV file
+        |with lines describing videos with the following columns: SRC, DOMAIN, USER, COLLECTION, PRESENTATION
+        |REQUIRE-TICKET.
+      """.stripMargin.stripLineEnd)
+    val videosCsv: ScallopOption[Path] = trailArg(name = "video-csv",
+      descr = "CSV file describing the videos",
+      required = true)
+    val srcFolder: ScallopOption[Path] = opt(name = "sourceVideosFolder",
+      descr = "Folder relative to which to resolve the SRC column in the CSV",
+      default = Some(Paths.get(".")))
+    val createParentItems: ScallopOption[Boolean] = opt(name = "create-parent-items", short = 'p',
+      descr = "Create parent items if they do not exist yet")
+    val checkSrcExists: ScallopOption[Boolean] = opt(name = "check-source-videos-exist", short='c',
+      descr = "Check that the source videos exist in the expected location",
+      required = false, default = Some(true))
+  }
+  addSubcommand(createAddActions)
+
+
   footer("")
 }
 
