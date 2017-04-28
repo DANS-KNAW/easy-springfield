@@ -89,11 +89,11 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val videosCsv: ScallopOption[Path] = trailArg(name = "video-csv",
       descr = "CSV file describing the videos",
       required = true)
-    val srcFolder: ScallopOption[Path] = trailArg(name = "sourceVideosFolder",
+    val srcFolder: ScallopOption[Path] = trailArg(name = "videos-folder",
       descr = "Folder relative to which to resolve the SRC column in the CSV",
       required = false, default = Some(Paths.get(".")))
-    val createParentItems: ScallopOption[Boolean] = opt(name = "create-parent-items", short = 'p',
-      descr = "Create parent items if they do not exist yet")
+    val checkParentItems: ScallopOption[Boolean] = opt(name = "check-parent-items", short = 'p',
+      descr = "Check that parent items (domain, user, collection) exist")
     val skipSourceExistsCheck: ScallopOption[Boolean] = opt(name = "skip-source-exists-check", short = 's',
       descr = "Do NOT Check that the source videos exist in the expected location")
   }

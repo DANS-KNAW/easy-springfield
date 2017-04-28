@@ -81,18 +81,26 @@ object Command extends App
         videos <- parseCsv(cmd.videosCsv())
         _ <- if (cmd.skipSourceExistsCheck()) Success(())
              else checkSourceVideosExist(videos, cmd.srcFolder())
-        // If check parent items -> doe controle
+        parentsToCreate <- if (cmd.checkParentItems())
+                             getParentPaths(videos)
+                               .map(checkPathExists)
+                               .collectResults
+                               .map(_.filterNot(_._2).map(_._1))
+                           else Success(Set[Path]())
         actions <- createAddActions(videos)
-      } yield new PrettyPrinter(160, 2).format(actions)
-      result.map { s =>
+      } yield (new PrettyPrinter(160, 2).format(actions), parentsToCreate)
+      result.map { case (s, ps) =>
         println(s)
-        "XML generated." + (if (cmd.skipSourceExistsCheck()) " (Existence of files NOT checked!)"
-                            else "")
+        "XML generated." + (if (cmd.skipSourceExistsCheck()) " (Existence of files has NOT been checked!)"
+                            else "") +
+          (if (ps.nonEmpty) "\nFollowing parent items do not yet exist:\n" + ps.mkString("\n")
+           else "\nParent items have been checked and exist.")
+
       }
     case Some(cmd @ opts.createUser) =>
-      createUser(cmd.user(), cmd.targetDomain()).map(_ => s"User created: ${cmd.user()}")
+      createUser(cmd.user(), cmd.targetDomain()).map(_ => s"User created: ${ cmd.user() }")
     case Some(cmd @ opts.createCollection) =>
-      createCollection(cmd.collection(), cmd.title(), cmd.description(), cmd.user(), cmd.targetDomain()).map(_ => s"Collection created: ${cmd.collection()}")
+      createCollection(cmd.collection(), cmd.title(), cmd.description(), cmd.user(), cmd.targetDomain()).map(_ => s"Collection created: ${ cmd.collection() }")
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }

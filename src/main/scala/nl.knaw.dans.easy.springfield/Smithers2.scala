@@ -44,7 +44,7 @@ trait Smithers2 {
     } yield xml
   }
 
-  def pathExists(path: Path): Try[Boolean] = {
+  def checkPathExists(path: Path): Try[(Path, Boolean)] = {
     trace(path)
     val uri = path2Uri(path)
     debug(s"Smithers2 URI: $uri")
@@ -52,9 +52,9 @@ trait Smithers2 {
       response <- http("GET", uri)
       if response.code == 200
       _ <- checkResponseOk(response.body)
-    } yield true // true to cast result to Try[Boolean]
+    } yield (path, true)
     result.recoverWith {
-      case SpringfieldErrorException(errorCode, _, _) if errorCode == 404 => Success(false)
+      case SpringfieldErrorException(errorCode, _, _) if errorCode == 404 => Success((path, false))
       case e => Failure(e)
     }
   }
