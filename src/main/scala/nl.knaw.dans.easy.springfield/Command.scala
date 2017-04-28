@@ -17,8 +17,8 @@ package nl.knaw.dans.easy.springfield
 
 import java.nio.file.{Path, Paths}
 
-import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.error._
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.io.StdIn
 import scala.util.{Failure, Success, Try}
@@ -79,11 +79,13 @@ object Command extends App
     case Some(cmd @ opts.createAddActions) =>
       val result = for {
         videos <- parseCsv(cmd.videosCsv())
+        _ <- if (cmd.skipSourceExistsCheck()) Success(())
+             else checkSourceVideosExist(videos, cmd.srcFolder())
         actions <- createAddActions(videos)
       } yield new PrettyPrinter(160, 2).format(actions)
       result.map { s =>
         println(s)
-        "XML generated"
+        "XML generated." + (if (cmd.skipSourceExistsCheck()) " (Existence of files NOT checked!)" else "")
       }
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }

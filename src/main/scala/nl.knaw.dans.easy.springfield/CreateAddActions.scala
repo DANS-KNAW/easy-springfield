@@ -15,21 +15,18 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import java.io.File
-import java.nio.file.{Path, Paths}
+import java.nio.file.{Files, Path, Paths}
 
 import org.apache.commons.csv.{CSVFormat, CSVParser, CSVRecord}
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 import scala.io.Source
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
 
 case class Video(srcVideo: Path, targetDomain: String, targetUser: String, targetCollection: String, targetPresentation: String, targetFileName: String, requireTicket: Boolean = true)
 
 trait CreateAddActions {
-  val sourceVideos: Path
-
   def parseCsv(file: Path): Try[Seq[Video]] = Try {
     val rawContent = Source.fromFile(file.toFile).mkString
     val format = CSVFormat.RFC4180
@@ -48,6 +45,13 @@ trait CreateAddActions {
           targetFileName = row.get("FILE"),
           requireTicket = row.get("REQUIRE-TICKET").toBoolean))
     // TODO: validate input
+  }
+
+  def checkSourceVideosExist(videos: Seq[Video], srcFolder: Path): Try[Unit] = {
+    val incorrect = videos.map(_.srcVideo).filterNot(v => !v.isAbsolute && Files.isRegularFile(srcFolder.resolve(v)))
+    if (incorrect.isEmpty) Success(())
+    else Failure(new Exception(s"Error in following items: [${incorrect.mkString(", ")}]. Possible errors: file not found (or a directory), path is absolute. " +
+      s"Paths resolved against source folder: $srcFolder"))
   }
 
   def createAddActions(videos: Seq[Video]): Try[Elem] = Try {
@@ -93,7 +97,6 @@ trait CreateAddActions {
   }
 
   def createAddVideo(srcVideo: Path, fileName: String): Elem = {
-      <video src={if (srcVideo.isAbsolute) srcVideo.toString
-                  else sourceVideos.resolve(srcVideo).toString} target={fileName}/>
+      <video src={srcVideo.toString} target={fileName}/>
   }
 }

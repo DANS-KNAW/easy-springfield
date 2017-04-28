@@ -15,25 +15,17 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
 import org.scalatest.Inside
 
 class CreateAddActionsSpec extends TestSupportFixture with Inside with CreateAddActions {
-  val sourceVideos: Path = Paths.get("src/test/resources/sourceVideos")
-
   "createAddVideo" should "return a filled-in video element" in {
     val videoElem = createAddVideo(Paths.get("/my/source/vid.mp4"), "vid01.mp4")
 
     videoElem.label shouldBe "video"
     videoElem.attribute("src").get.head.text shouldBe "/my/source/vid.mp4"
     videoElem.attribute("target").get.head.text shouldBe "vid01.mp4"
-  }
-
-  it should "prepend sourceVideos if srcVideo is relative" in {
-    val videoElem = createAddVideo(Paths.get("my/source/vid.mp4"), "vid01.mp4")
-
-    videoElem.attribute("src").get.head.text shouldBe "src/test/resources/sourceVideos/my/source/vid.mp4"
   }
 
   "createAddPresentation" should "provide the correct wrapper elements for a single added video" in {

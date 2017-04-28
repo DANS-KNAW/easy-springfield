@@ -19,8 +19,8 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.file.{Path, Paths}
 
-import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.lib.error._
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.util.{Failure, Success, Try}
 import scala.xml.{Elem, XML}
