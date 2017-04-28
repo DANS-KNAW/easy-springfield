@@ -28,6 +28,7 @@ trait GetStatus {
       if raw2 \@ "id" == "2"
       filename <- raw2 \ "properties" \ "filename"
       status = raw2 \ "properties" \ "status"
-    } yield  VideoStatusSummary(forUser, filename.text, if (status.isEmpty) "waiting" else status.head.text)
+    } yield VideoStatusSummary(forUser, filename.text, if (status.isEmpty) "waiting"
+                                                       else status.head.text)
   }
 }

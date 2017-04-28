@@ -17,7 +17,7 @@ package nl.knaw.dans.easy
 
 import java.util.Properties
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 package object springfield {
   object Version {

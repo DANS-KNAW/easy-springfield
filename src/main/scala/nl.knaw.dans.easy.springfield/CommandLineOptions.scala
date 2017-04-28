@@ -15,10 +15,10 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.{ Path, Paths }
 
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.rogach.scallop.{ScallopConf, ScallopOption, Subcommand, singleArgConverter}
+import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, singleArgConverter }
 
 class CommandLineOptions(args: Array[String], properties: PropertiesConfiguration) extends ScallopConf(args) {
   appendDefaultToDescription = true
@@ -94,7 +94,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
       required = false, default = Some(Paths.get(".")))
     val createParentItems: ScallopOption[Boolean] = opt(name = "create-parent-items", short = 'p',
       descr = "Create parent items if they do not exist yet")
-    val skipSourceExistsCheck: ScallopOption[Boolean] = opt(name = "skip-source-exists-check", short='s',
+    val skipSourceExistsCheck: ScallopOption[Boolean] = opt(name = "skip-source-exists-check", short = 's',
       descr = "Do NOT Check that the source videos exist in the expected location")
   }
   addSubcommand(createAddActions)

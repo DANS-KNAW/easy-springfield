@@ -8,7 +8,7 @@
         </encoder>
     </appender>
     <root level="warn">
-        <appender-ref ref="FILE" />
+        <appender-ref ref="FILE"/>
     </root>
-    <logger name="nl.knaw.dans.easy" level="trace" />
+    <logger name="nl.knaw.dans.easy" level="trace"/>
 </configuration>

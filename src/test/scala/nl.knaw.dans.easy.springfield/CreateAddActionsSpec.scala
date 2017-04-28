@@ -55,8 +55,8 @@ class CreateAddActionsSpec extends TestSupportFixture with Inside with CreateAdd
 
     inside(vs.toList) {
       case List(v1, v2) =>
-          v1.attribute("target").get.head.text shouldBe "vid01.mp4"
-          v2.attribute("target").get.head.text shouldBe "vid02.mp4"
+        v1.attribute("target").get.head.text shouldBe "vid01.mp4"
+        v2.attribute("target").get.head.text shouldBe "vid02.mp4"
     }
   }
 
