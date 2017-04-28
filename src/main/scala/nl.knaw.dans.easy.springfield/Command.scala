@@ -73,7 +73,7 @@ object Command extends App
       for {
         list <- if (cmd.withReferencedItems()) getReferencedPaths(cmd.path()).map(_ :+ cmd.path())
                 else Success(Seq(cmd.path()))
-        _ <- approveDeletion(list)
+        _ <- approveAction(list, """These items will be deleted.""")
         _ <- list.map(deletePath).collectResults
       } yield "Items deleted"
     case Some(cmd @ opts.createAddActions) =>
@@ -87,7 +87,7 @@ object Command extends App
                                .collectResults
                                .map(_.filterNot(_._2).map(_._1))
                            else Success(Set[Path]())
-        actions <- createAddActions(videos)
+        actions <- createSpringfieldActions(videos)
       } yield (new PrettyPrinter(160, 2).format(actions), parentsToCreate)
       result.map { case (s, ps) =>
         println(s)
@@ -101,6 +101,18 @@ object Command extends App
       createUser(cmd.user(), cmd.targetDomain()).map(_ => s"User created: ${ cmd.user() }")
     case Some(cmd @ opts.createCollection) =>
       createCollection(cmd.collection(), cmd.title(), cmd.description(), cmd.user(), cmd.targetDomain()).map(_ => s"Collection created: ${ cmd.collection() }")
+    case Some(cmd @ opts.setRequireTicket) =>
+      for {
+        videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 && p.getName(p.getNameCount - 2).toString == "video"))
+        _ <- approveAction(videos,
+          s"""
+             |WARNING: THIS ACTION COULD EXPOSE VIDEOS TO UNAUTHORIZED VIEWERS.
+             |These videos will be set to require-ticket = ${ cmd.requireTicket() }
+             |
+             |(Note that you may have to clear your browser cache after making videos private to effectively test the result.)
+           """.stripMargin)
+        _ <- videos.map(setRequireTicket(_, cmd.requireTicket().toBoolean)).collectResults
+      } yield s"Video(s) set to require-ticket = ${cmd.requireTicket()}"
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }
@@ -123,11 +135,12 @@ object Command extends App
     } yield summaries
   }
 
-  private def approveDeletion(list: Seq[Path]): Try[Seq[Path]] = {
-    println("The following items will be deleted:")
+  private def approveAction(list: Seq[Path], msg: String): Try[Seq[Path]] = {
+    println("The following items will be processed:")
     list.foreach(println)
+    println(msg)
     print("OK? (y/n): ")
     if (StdIn.readLine().toLowerCase == "y") Success(list)
-    else Failure(new Exception("User aborted delete"))
+    else Failure(new Exception("User aborted action"))
   }
 }

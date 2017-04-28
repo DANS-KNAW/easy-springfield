@@ -60,25 +60,10 @@ trait CreateAddActions {
       videos.map(v => Paths.get("domain", v.targetDomain, "user", v.targetUser, "collection", v.targetCollection))).toSet
   }
 
-  def createAddActions(videos: Seq[Video]): Try[Elem] = Try {
+  def createSpringfieldActions(videos: Seq[Video]): Try[Elem] = Try {
     <actions>
       { createAddPresentations(videos) }
     </actions>
-  }
-
-  def createAddUser(name: String, targetDomain: String): Elem = {
-    <add target={s"domain/$targetDomain"}>
-      <user name={name}/>
-    </add>
-  }
-
-  def createAddCollection(name: String, title: String, description: String, targetDomain: String, targetUser: String): Elem = {
-    <add target={s"domain/$targetDomain/user/$targetUser"}>
-      <collection name={name}>
-        <title>{title}</title>
-        <description>{description}</description>
-      </collection>
-    </add>
   }
 
   def createAddPresentations(videos: Seq[Video]): Seq[Elem] = {

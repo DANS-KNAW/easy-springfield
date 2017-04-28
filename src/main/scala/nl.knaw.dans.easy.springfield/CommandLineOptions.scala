@@ -128,6 +128,14 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   }
   addSubcommand(createCollection)
 
+  val setRequireTicket = new Subcommand("set-require-ticket") {
+    descr("Sets or clears the 'require-ticket' flag for the specified presentation")
+    val path: ScallopOption[Path] = trailArg(name = "springfield-path", descr = "The parent of items to change")
+    val requireTicket: ScallopOption[String] = trailArg(name = "require-ticket", descr = "true|false")
+  }
+  addSubcommand(setRequireTicket)
+
+
   footer("")
 }
 
