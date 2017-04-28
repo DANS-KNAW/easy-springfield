@@ -54,6 +54,12 @@ trait CreateAddActions {
       s"Paths resolved against source folder: $srcFolder"))
   }
 
+  def getParentPaths(videos: Seq[Video]): Set[Path] = {
+    (videos.map(v => Paths.get("domain", v.targetDomain)) ++
+      videos.map(v => Paths.get("domain", v.targetDomain, "user", v.targetUser)) ++
+      videos.map(v => Paths.get("domain", v.targetDomain, "user", v.targetUser, "collection", v.targetCollection))).toSet
+  }
+
   def createAddActions(videos: Seq[Video]): Try[Elem] = Try {
     <actions>
       { createAddPresentations(videos) }

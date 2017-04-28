@@ -81,6 +81,7 @@ object Command extends App
         videos <- parseCsv(cmd.videosCsv())
         _ <- if (cmd.skipSourceExistsCheck()) Success(())
              else checkSourceVideosExist(videos, cmd.srcFolder())
+        // If check parent items -> doe controle
         actions <- createAddActions(videos)
       } yield new PrettyPrinter(160, 2).format(actions)
       result.map { s =>
@@ -88,6 +89,10 @@ object Command extends App
         "XML generated." + (if (cmd.skipSourceExistsCheck()) " (Existence of files NOT checked!)"
                             else "")
       }
+    case Some(cmd @ opts.createUser) =>
+      createUser(cmd.user(), cmd.targetDomain()).map(_ => s"User created: ${cmd.user()}")
+    case Some(cmd @ opts.createCollection) =>
+      createCollection(cmd.collection(), cmd.title(), cmd.description(), cmd.user(), cmd.targetDomain()).map(_ => s"Collection created: ${cmd.collection()}")
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }

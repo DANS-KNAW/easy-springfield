@@ -26,6 +26,7 @@ import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Elem, XML }
 import scalaj.http.Http
 
+
 trait Smithers2 {
   this: DebugEnhancedLogging =>
   val smithers2BaseUri: URI
@@ -39,9 +40,25 @@ trait Smithers2 {
     for {
       response <- http("GET", uri)
       if response.code == 200
-      xml <- isResponseOk(response.body)
+      xml <- checkResponseOk(response.body)
     } yield xml
   }
+
+  def pathExists(path: Path): Try[Boolean] = {
+    trace(path)
+    val uri = path2Uri(path)
+    debug(s"Smithers2 URI: $uri")
+    val result = for {
+      response <- http("GET", uri)
+      if response.code == 200
+      _ <- checkResponseOk(response.body)
+    } yield true // true to cast result to Try[Boolean]
+    result.recoverWith {
+      case SpringfieldErrorException(errorCode, _, _) if errorCode == 404 => Success(false)
+      case e => Failure(e)
+    }
+  }
+
 
   /**
    * Attempts to delete the item at `path`
@@ -56,7 +73,35 @@ trait Smithers2 {
     for {
       response <- http("DELETE", uri)
       if response.code == 200
-      _ <- isResponseOk(response.body)
+      _ <- checkResponseOk(response.body)
+    } yield ()
+  }
+
+  def createUser(user: String, targetDomain: String): Try[Unit] = {
+    trace(user, targetDomain)
+    val uri = path2Uri(Paths.get("domain", targetDomain, "user", user, "properties"))
+    debug(s"Smithers2 URI: $uri")
+    for {
+      response <- http("PUT", uri, <fsxml><properties/></fsxml>.toString)
+      if response.code == 200
+      _ <- checkResponseOk(response.body)
+    } yield ()
+  }
+
+  def createCollection(name: String, title: String, description: String, targetUser: String, targetDomain: String): Try[Unit] = {
+    trace(name, title, description, targetUser, targetDomain)
+    val uri = path2Uri(Paths.get("domain", targetDomain, "user", targetUser, "collection", name, "properties"))
+    debug(s"Smithers2 URI: $uri")
+    for {
+      response <- http("PUT", uri,
+        <fsxml>
+          <properties>
+            <title>{ title }</title>
+            <description>{ description }</description>
+          </properties>
+        </fsxml>.toString)
+      if response.code == 200
+      _ <- checkResponseOk(response.body)
     } yield ()
   }
 
@@ -90,14 +135,17 @@ trait Smithers2 {
       Paths.get(smithers2BaseUri.getPath).resolve(path).toString, null, null)
   }
 
-  private def http(method: String, uri: URI) = Try {
-    Http(uri.toASCIIString)
-      .method(method)
+  private def http(method: String, uri: URI, body: String = null) = Try {
+    {
+      if (body == null) Http(uri.toASCIIString)
+      else Http(uri.toASCIIString).postData(body)
+    }.method(method)
       .timeout(connTimeoutMs = smithers2ConnectionTimeoutMs, readTimeoutMs = smithers2ReadTimoutMs)
       .asBytes
   }
 
-  def isResponseOk(content: Array[Byte]): Try[Elem] = {
+
+  def checkResponseOk(content: Array[Byte]): Try[Elem] = {
     /*
      * Never mind about the status codes. Springfield only returns 200 :-/
      */
@@ -107,7 +155,7 @@ trait Smithers2 {
         val errorCode = xml.attribute("id").flatMap(_.headOption).map(_.text).getOrElse("<no error code>")
         val message = (xml \ "properties" \ "message").headOption.map(_.text).getOrElse("<no message>")
         val details = (xml \ "properties" \ "details").headOption.map(_.text).getOrElse("<no details>")
-        Failure(new Exception(s"($errorCode) $message: $details"))
+        Failure(SpringfieldErrorException(errorCode.toInt, message, details))
       case _ => Success(xml)
     }
   }

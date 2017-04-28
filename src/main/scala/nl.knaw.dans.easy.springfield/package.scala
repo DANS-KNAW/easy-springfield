@@ -20,6 +20,9 @@ import java.util.Properties
 import scala.util.{ Failure, Success, Try }
 
 package object springfield {
+  case class SpringfieldErrorException(errorCode: Int, message: String, details: String) extends Exception(s"($errorCode) $message: $details")
+
+
   object Version {
     def apply(): String = {
       val props = new Properties()

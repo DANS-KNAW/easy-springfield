@@ -65,7 +65,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     descr("List users in a given domain")
     val domain: ScallopOption[String] = trailArg(name = "domain",
       descr = "the domain of which to list the users",
-      default = Some("dans"))
+      default = Some(properties.getString("springfield.default-domain")))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(listUsers)
@@ -99,6 +99,34 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   }
   addSubcommand(createAddActions)
 
+  val createUser = new Subcommand("create-user") {
+    descr(
+      """Create a new user in the Springfield database. This does NOT generate a springfield-actions XML but
+        |instead creates the user in Springfield right away.
+      """.stripMargin.stripLineEnd)
+      val user: ScallopOption[String] = trailArg(name = "user", descr = "User name for the new user")
+      val targetDomain: ScallopOption[String] = opt(name = "target-domain", short = 'd',
+        descr = "The target domain in which to create the user",
+        default = Some(properties.getString("springfield.default-domain")))
+  }
+  addSubcommand(createUser)
+
+  val createCollection = new Subcommand("create-collection") {
+    descr(
+      """Create a new collection in the Springfield database. This does NOT generate a springfield-actions XML but
+        |instead creates the collection in Springfield right away.
+      """.stripMargin.stripLineEnd)
+    val collection: ScallopOption[String] = trailArg(name = "collection", descr = "Name for the collection")
+    val user: ScallopOption[String] = trailArg(name = "target-user", descr = "Existing user under which to store the collection")
+    val targetDomain: ScallopOption[String] =  opt(name = "target-domain",
+      descr = "The target domain in which to create the user",
+      default = Some(properties.getString("springfield.default-domain")))
+    val title: ScallopOption[String] = opt(name = "title", short='t',
+      descr = "Title for the new collection", default = Some(""))
+    val description: ScallopOption[String] = opt(name = "description", short = 'd',
+      descr = "Description for the new collection", default = Some(""))
+  }
+  addSubcommand(createCollection)
 
   footer("")
 }
