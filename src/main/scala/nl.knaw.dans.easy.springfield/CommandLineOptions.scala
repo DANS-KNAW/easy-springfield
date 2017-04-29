@@ -82,8 +82,8 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
 
   val createAddActions = new Subcommand("create-add-actions") {
     descr(
-      """Create Springfield Actions XML containing add-actions for items specified in a CSV file
-        |with lines describing videos with the following columns: SRC, DOMAIN, USER, COLLECTION, PRESENTATION
+      """Create Springfield Actions XML containing add-actions for A/V items specified in a CSV file
+        |with lines describing videos with the following columns: SRC, DOMAIN, USER, COLLECTION, PRESENTATION, FILE,
         |REQUIRE-TICKET.
       """.stripMargin.stripLineEnd)
     val videosCsv: ScallopOption[Path] = trailArg(name = "video-csv",

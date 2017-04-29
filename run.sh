@@ -16,8 +16,12 @@
 #
 
 
-ARGS=$@
 APPHOME=home
+
+for a in "$@"
+do
+  ARGS="$ARGS'$a' "
+done
 
 mvn exec:java -Dapp.home=$APPHOME \
               -Dconfig.file=$APPHOME/cfg/application.conf \
