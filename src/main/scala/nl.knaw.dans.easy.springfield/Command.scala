@@ -41,6 +41,37 @@ object Command extends App
   opts.verify()
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
+    case Some(cmd @ opts.listUsers) =>
+      debug("Calling list-users")
+      getUserList(cmd.domain()).map(_.mkString(", "))
+    case Some(cmd @ opts.createUser) =>
+      createUser(cmd.user(), cmd.targetDomain()).map(_ => s"User created: ${ cmd.user() }")
+    case Some(cmd @ opts.createCollection) =>
+      createCollection(cmd.collection(), cmd.title(), cmd.description(), cmd.user(), cmd.targetDomain()).map(_ => s"Collection created: ${ cmd.collection() }")
+    case Some(cmd @ opts.createSpringfieldActions) =>
+      val result = for {
+        videos <- parseCsv(cmd.videosCsv())
+        _ <- if (cmd.videosFolder.isSupplied) checkSourceVideosExist(videos, cmd.videosFolder())
+             else Success(())
+        parentsToCreate <- if (cmd.checkParentItems())
+                             getParentPaths(videos)
+                               .map(checkPathExists)
+                               .collectResults
+                               .map(_.filterNot(_._2).map(_._1))
+                           else Success(Set[Path]())
+        actions <- createSpringfieldActions(videos)
+      } yield (new PrettyPrinter(160, 2).format(actions), parentsToCreate)
+      result.map { case (s, ps) =>
+        println(s)
+        "XML generated." + (if (!cmd.videosFolder.isSupplied) " (Existence of files has NOT been checked!)"
+                            else "") +
+          (if (cmd.checkParentItems()) {
+            "\nParent items have been checked: " +
+              (if (ps.isEmpty) "OK"
+               else "not existing yet:\n" + ps.mkString("\n"))
+          }
+           else "\nParent items have been NOT been checked.")
+      }
     case Some(cmd @ opts.status) =>
       val TABS = "%-35s %-40s %-7s %-10s\n"
       val maybeList =
@@ -67,44 +98,6 @@ object Command extends App
             (TABS format("=" * "USER".length, "=" * "VIDEO".length, "=" * "PRIVATE".length, "=" * "STATUS".length)) +
             list
       }
-    case Some(cmd @ opts.listUsers) =>
-      debug("Calling list-users")
-      getUserList(cmd.domain()).map(_.mkString(", "))
-    case Some(cmd @ opts.delete) =>
-      for {
-        list <- if (cmd.withReferencedItems()) getReferencedPaths(cmd.path()).map(_ :+ getCompletePath(cmd.path()))
-                else Success(Seq(cmd.path()))
-        _ <- approveAction(list, """These items will be deleted.""")
-        _ <- list.map(deletePath).collectResults
-      } yield "Items deleted"
-    case Some(cmd @ opts.`createSpringfieldActions`) =>
-      val result = for {
-        videos <- parseCsv(cmd.videosCsv())
-        _ <- if (cmd.videosFolder.isSupplied) checkSourceVideosExist(videos, cmd.videosFolder())
-             else Success(())
-        parentsToCreate <- if (cmd.checkParentItems())
-                             getParentPaths(videos)
-                               .map(checkPathExists)
-                               .collectResults
-                               .map(_.filterNot(_._2).map(_._1))
-                           else Success(Set[Path]())
-        actions <- createSpringfieldActions(videos)
-      } yield (new PrettyPrinter(160, 2).format(actions), parentsToCreate)
-      result.map { case (s, ps) =>
-        println(s)
-        "XML generated." + (if (!cmd.videosFolder.isSupplied) " (Existence of files has NOT been checked!)"
-                            else "") +
-          (if (cmd.checkParentItems()) {
-            "\nParent items have been checked: " +
-              (if (ps.isEmpty) "OK"
-               else "not existing yet:\n" + ps.mkString("\n"))
-          }
-           else "\nParent items have been NOT been checked.")
-      }
-    case Some(cmd @ opts.createUser) =>
-      createUser(cmd.user(), cmd.targetDomain()).map(_ => s"User created: ${ cmd.user() }")
-    case Some(cmd @ opts.createCollection) =>
-      createCollection(cmd.collection(), cmd.title(), cmd.description(), cmd.user(), cmd.targetDomain()).map(_ => s"Collection created: ${ cmd.collection() }")
     case Some(cmd @ opts.setRequireTicket) =>
       for {
         videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 && p.getName(p.getNameCount - 2).toString == "video"))
@@ -121,6 +114,13 @@ object Command extends App
       createTicket(getCompletePath(cmd.path()), cmd.ticket(), cmd.expiresAfterSeconds()).map(_ => "Ticket created.")
     case Some(cmd @ opts.deleteTicket) =>
       deleteTicket(cmd.ticket()).map(_ => "Ticket deleted.")
+    case Some(cmd @ opts.delete) =>
+      for {
+        list <- if (cmd.withReferencedItems()) getReferencedPaths(cmd.path()).map(_ :+ getCompletePath(cmd.path()))
+                else Success(Seq(cmd.path()))
+        _ <- approveAction(list, """These items will be deleted.""")
+        _ <- list.map(deletePath).collectResults
+      } yield "Items deleted"
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }
