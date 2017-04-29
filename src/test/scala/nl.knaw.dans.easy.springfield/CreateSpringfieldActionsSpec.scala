@@ -19,7 +19,7 @@ import java.nio.file.Paths
 
 import org.scalatest.Inside
 
-class CreateAddActionsSpec extends TestSupportFixture with Inside with CreateAddActions {
+class CreateSpringfieldActionsSpec extends TestSupportFixture with Inside with CreateSpringfieldActions {
   "createAddVideo" should "return a filled-in video element" in {
     val videoElem = createAddVideo(Paths.get("/my/source/vid.mp4"), "vid01.mp4")
 

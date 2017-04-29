@@ -32,9 +32,9 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     s"""
        |Manage Springfield Web TV
        |
-            |Usage:
+       |Usage:
        |
-            |$printedName status [-d, --domain <domain>] [-u, --user <user>]
+       |$printedName status [-d, --domain <domain>] [-u, --user <user>]
        |$printedName ls <path>
        |$printedName rm <path>
        |$printedName add ...
@@ -49,6 +49,63 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     if (s.startsWith("~")) s.replaceFirst("~", System.getProperty("user.home"))
     else s
 
+  val listUsers = new Subcommand("list-users") {
+    descr("List users in a given domain")
+    val domain: ScallopOption[String] = trailArg(name = "domain",
+      descr = "the domain of which to list the users",
+      default = Some(properties.getString("springfield.default-domain")))
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(listUsers)
+
+  val createUser = new Subcommand("create-user") {
+    descr(
+      """Create a new user in the Springfield database. This does NOT generate a springfield-actions XML but
+        |instead creates the user in Springfield right away.
+      """.stripMargin.stripLineEnd)
+    val user: ScallopOption[String] = trailArg(name = "user", descr = "User name for the new user")
+    val targetDomain: ScallopOption[String] = opt(name = "target-domain", short = 'd',
+      descr = "The target domain in which to create the user",
+      default = Some(properties.getString("springfield.default-domain")))
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(createUser)
+
+  val createCollection = new Subcommand("create-collection") {
+    descr(
+      """Create a new collection in the Springfield database. This does NOT generate a springfield-actions XML but
+        |instead creates the collection in Springfield right away.
+      """.stripMargin.stripLineEnd)
+    val collection: ScallopOption[String] = trailArg(name = "collection", descr = "Name for the collection")
+    val user: ScallopOption[String] = trailArg(name = "target-user", descr = "Existing user under which to store the collection")
+    val targetDomain: ScallopOption[String] = opt(name = "target-domain",
+      descr = "The target domain in which to create the user",
+      default = Some(properties.getString("springfield.default-domain")))
+    val title: ScallopOption[String] = opt(name = "title", short = 't',
+      descr = "Title for the new collection", default = Some(""))
+    val description: ScallopOption[String] = opt(name = "description", short = 'd',
+      descr = "Description for the new collection", default = Some(""))
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(createCollection)
+
+  val createSpringfieldActions = new Subcommand("create-springfield-actions") {
+    descr(
+      """Create Springfield Actions XML containing add-actions for A/V items specified in a CSV file
+        |with lines describing videos with the following columns: SRC, DOMAIN, USER, COLLECTION, PRESENTATION, FILE,
+        |REQUIRE-TICKET.
+      """.stripMargin.stripLineEnd)
+    val videosCsv: ScallopOption[Path] = trailArg(name = "video-csv",
+      descr = "CSV file describing the videos",
+      required = true)
+    val videosFolder: ScallopOption[Path] = opt(name = "videos-folder",
+      descr = "Folder relative to which to resolve the SRC column in the CSV")
+    val checkParentItems: ScallopOption[Boolean] = opt(name = "check-parent-items", short = 'p',
+      descr = "Check that parent items (domain, user, collection) exist")
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(createSpringfieldActions)
+
   val status = new Subcommand("status") {
     descr("Retrieve the status of content offered for ingestion into Springfield")
     val domain: ScallopOption[String] = opt(name = "domain",
@@ -61,14 +118,13 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   }
   addSubcommand(status)
 
-  val listUsers = new Subcommand("list-users") {
-    descr("List users in a given domain")
-    val domain: ScallopOption[String] = trailArg(name = "domain",
-      descr = "the domain of which to list the users",
-      default = Some(properties.getString("springfield.default-domain")))
+  val setRequireTicket = new Subcommand("set-require-ticket") {
+    descr("Sets or clears the 'require-ticket' flag for the specified presentation")
+    val path: ScallopOption[Path] = trailArg(name = "springfield-path", descr = "The parent of items to change")
+    val requireTicket: ScallopOption[String] = trailArg(name = "require-ticket", descr = "true|false")
     footer(SUBCOMMAND_SEPARATOR)
   }
-  addSubcommand(listUsers)
+  addSubcommand(setRequireTicket)
 
   val delete = new Subcommand("delete") {
     descr("Delete the item at the specified Springfield path")
@@ -79,63 +135,6 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(delete)
-
-  val createAddActions = new Subcommand("create-add-actions") {
-    descr(
-      """Create Springfield Actions XML containing add-actions for A/V items specified in a CSV file
-        |with lines describing videos with the following columns: SRC, DOMAIN, USER, COLLECTION, PRESENTATION, FILE,
-        |REQUIRE-TICKET.
-      """.stripMargin.stripLineEnd)
-    val videosCsv: ScallopOption[Path] = trailArg(name = "video-csv",
-      descr = "CSV file describing the videos",
-      required = true)
-    val srcFolder: ScallopOption[Path] = trailArg(name = "videos-folder",
-      descr = "Folder relative to which to resolve the SRC column in the CSV",
-      required = false, default = Some(Paths.get(".")))
-    val checkParentItems: ScallopOption[Boolean] = opt(name = "check-parent-items", short = 'p',
-      descr = "Check that parent items (domain, user, collection) exist")
-    val skipSourceExistsCheck: ScallopOption[Boolean] = opt(name = "skip-source-exists-check", short = 's',
-      descr = "Do NOT Check that the source videos exist in the expected location")
-  }
-  addSubcommand(createAddActions)
-
-  val createUser = new Subcommand("create-user") {
-    descr(
-      """Create a new user in the Springfield database. This does NOT generate a springfield-actions XML but
-        |instead creates the user in Springfield right away.
-      """.stripMargin.stripLineEnd)
-      val user: ScallopOption[String] = trailArg(name = "user", descr = "User name for the new user")
-      val targetDomain: ScallopOption[String] = opt(name = "target-domain", short = 'd',
-        descr = "The target domain in which to create the user",
-        default = Some(properties.getString("springfield.default-domain")))
-  }
-  addSubcommand(createUser)
-
-  val createCollection = new Subcommand("create-collection") {
-    descr(
-      """Create a new collection in the Springfield database. This does NOT generate a springfield-actions XML but
-        |instead creates the collection in Springfield right away.
-      """.stripMargin.stripLineEnd)
-    val collection: ScallopOption[String] = trailArg(name = "collection", descr = "Name for the collection")
-    val user: ScallopOption[String] = trailArg(name = "target-user", descr = "Existing user under which to store the collection")
-    val targetDomain: ScallopOption[String] =  opt(name = "target-domain",
-      descr = "The target domain in which to create the user",
-      default = Some(properties.getString("springfield.default-domain")))
-    val title: ScallopOption[String] = opt(name = "title", short='t',
-      descr = "Title for the new collection", default = Some(""))
-    val description: ScallopOption[String] = opt(name = "description", short = 'd',
-      descr = "Description for the new collection", default = Some(""))
-  }
-  addSubcommand(createCollection)
-
-  val setRequireTicket = new Subcommand("set-require-ticket") {
-    descr("Sets or clears the 'require-ticket' flag for the specified presentation")
-    val path: ScallopOption[Path] = trailArg(name = "springfield-path", descr = "The parent of items to change")
-    val requireTicket: ScallopOption[String] = trailArg(name = "require-ticket", descr = "true|false")
-  }
-  addSubcommand(setRequireTicket)
-
-
   footer("")
 }
 

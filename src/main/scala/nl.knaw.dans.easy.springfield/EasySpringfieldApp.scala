@@ -25,7 +25,7 @@ trait EasySpringfieldApp {
   this: DebugEnhancedLogging
     with Smithers2
     with ListUsers
-    with CreateAddActions =>
+    with CreateSpringfieldActions =>
   val properties = new PropertiesConfiguration(Paths.get(System.getProperty("app.home")).resolve("cfg/application.properties").toFile)
   val smithers2BaseUri: URI = new URI(properties.getString("springfield.smithers2.base-uri"))
   val smithers2ConnectionTimeoutMs: Int = properties.getInt("springfield.smithers2-connection-timeout-ms")

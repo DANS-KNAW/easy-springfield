@@ -32,6 +32,7 @@ trait Smithers2 {
   val smithers2BaseUri: URI
   val smithers2ConnectionTimeoutMs: Int
   val smithers2ReadTimoutMs: Int
+  val defaultDomain: String
 
   def getXmlFromPath(path: Path): Try[Elem] = {
     trace(path)
@@ -145,12 +146,17 @@ trait Smithers2 {
       }.flatten.map(_.distinct)
   }
 
+  def getCompletePath(path: Path): Path = {
+    if (path.getName(0).toString == "domain") path
+    else Paths.get("domain", defaultDomain).resolve(path)
+  }
+
   private def path2Uri(path: Path): URI = {
     new URI(smithers2BaseUri.getScheme,
       smithers2BaseUri.getUserInfo,
       smithers2BaseUri.getHost,
       smithers2BaseUri.getPort,
-      Paths.get(smithers2BaseUri.getPath).resolve(path).toString, null, null)
+      Paths.get(smithers2BaseUri.getPath).resolve(getCompletePath(path)).toString, null, null)
   }
 
   private def http(method: String, uri: URI, body: String = null) = Try {

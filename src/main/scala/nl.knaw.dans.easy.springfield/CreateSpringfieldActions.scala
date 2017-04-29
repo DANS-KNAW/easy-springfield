@@ -24,25 +24,25 @@ import scala.io.Source
 import scala.util.{ Failure, Success, Try }
 import scala.xml.Elem
 
-case class Video(srcVideo: Path, targetDomain: String, targetUser: String, targetCollection: String, targetPresentation: String, targetFileName: String, requireTicket: Boolean = true)
+case class Video(srcVideo: Path, targetDomain: String, targetUser: String, targetCollection: String, targetPresentation: String, targetVideo: String, requireTicket: Boolean = true)
 
-trait CreateAddActions {
+trait CreateSpringfieldActions {
   def parseCsv(file: Path): Try[Seq[Video]] = Try {
     val rawContent = Source.fromFile(file.toFile).mkString
     val format = CSVFormat.RFC4180
       .withRecordSeparator(',')
-      .withHeader("SRC", "DOMAIN", "USER", "COLLECTION", "PRESENTATION", "FILE", "REQUIRE-TICKET")
+      .withHeader("SRC-VIDEO", "DOMAIN", "USER", "COLLECTION", "PRESENTATION", "TARGET-VIDEO", "REQUIRE-TICKET")
       .withSkipHeaderRecord(true)
     val parser = CSVParser.parse(rawContent, format)
     parser.getRecords.asScala
       .map((row: CSVRecord) =>
         Video(
-          srcVideo = Paths.get(row.get("SRC")),
+          srcVideo = Paths.get(row.get("SRC-VIDEO")),
           targetDomain = row.get("DOMAIN"),
           targetUser = row.get("USER"),
           targetCollection = row.get("COLLECTION"),
           targetPresentation = row.get("PRESENTATION"),
-          targetFileName = row.get("FILE"),
+          targetVideo = row.get("TARGET-VIDEO"),
           requireTicket = row.get("REQUIRE-TICKET").toBoolean))
     // TODO: validate input
   }
@@ -79,7 +79,7 @@ trait CreateAddActions {
     <add target={s"domain/${ videos.head.targetDomain }/user/${ videos.head.targetUser }/collection/${ videos.head.targetCollection }"}>
       <presentation name={videos.head.targetPresentation}>
         <video-playlist require-ticket={videos.head.requireTicket.toString}>
-          {videos.sortBy(_.targetFileName).map(v => createAddVideo(v.srcVideo, v.targetFileName))}
+          {videos.sortBy(_.targetVideo).map(v => createAddVideo(v.srcVideo, v.targetVideo))}
         </video-playlist>
       </presentation>
     </add>

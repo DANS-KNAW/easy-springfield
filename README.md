@@ -16,7 +16,6 @@ SYNOPSIS
     easy-springfield status [-u, --user <arg>][-d, --domain <arg>]
     easy-springfield set-require-ticket <springfield-path> {true|false}
     easy-springfield delete [-r, --with-referenced-items] <springfield-path>
-            
     
     
 DESCRIPTION
@@ -26,8 +25,11 @@ the hosted content of a Springfield instance can be a rather challenging task, d
 lack of supporting tools. `easy-springfield` provides some commands to ease this task. It
 does *not* presume to fully automate Springfield management.
 
+(Note: even though Springfield can also serve audio-only media files, all media files are generall
+referred to as "videos" in the Springfield interface. We will do the same below.)
+
 ### Springfield paths
-Media resources in Springfield are stored in a tree-structure. The service `smithers2` keeps
+Videos in Springfield are stored in a tree-structure. The service `smithers2` keeps
 track of this structure and offers a RESTful API to it. `easy-springfield` uses this RESTful
 API. Where the commands require a `springfield-path` argument, a path into aforementioned tree is intended.
 
@@ -59,7 +61,7 @@ Everywhere else where a domain must be specified, it will then also default to t
 ### Examining raw Springfield metadata 
 Although `easy-springfield` lets you manage a considerable part of the Springfield repository without your
 having to interact with `smithers2` directly, it is often convenient to examine its raw output. You can
-construct the smithers-URL of an item, as follows:
+construct the smithers-URL of an item as follows:
 
     <smithers2-base-uri>/<springfield-path>
     
@@ -82,7 +84,7 @@ easy to understand. Most of the subcommands supported by `easy-springfield` use 
 their functionality.
 
 ### Listing and creating containers
-As discussed before, the A/V media items are stored as leaves of a tree structure. The parent elements
+As discussed before, the videos are stored as leaves of a tree structure. The parent elements
 of that structure can, in part, be examined and managed by `easy-springfield`. 
 
 Currently it is only possible to list the users (in a given domain). To get a list of the items
@@ -90,7 +92,7 @@ in a collection or a presentation, retrieve the raw Springfield metadata as expl
 section.
 
 Users and collections can be created with the subcommands `create-user` and `create-collection`. In
-contrast to the command to add A/V items to Springfield - discussed below - these subcommands will
+contrast to the command to add videos to Springfield - discussed below - these subcommands will
 *not* create Springfield actions XML, but in fact create the specified items in Springfield directly.
 
 ### Adding videos 
@@ -103,12 +105,12 @@ containing the required metadata about the videos. The columns are defined by th
 * `DOMAIN` - (optional) the domain under which to add the video (must exist); if not specified: the default domain
 * `USER` - the user under which to add the video (must exist)
 * `COLLECTION` - the collection under which to add the video (must exist)
-* `PRESENTATION` - the presentation under which to add the video (must **not** exist; will be created)
+* `PRESENTATION` - the presentation under which to add the video (**must not** exist; will be created)
 * `TARGET-VIDEO` - (optional) the name of the video in Springfield; if not specified: the base name of `SRC-VIDEO`
 * `REQUIRE-TICKET` - whether an authorization ticket is required to play the video (`true` of `false`) 
 
-The subcommand will print the XML directly to the standard output, so to use it you should redirect STDOUT
-to a file. The OK/error messages will not interfere, as they will be printed on the STDERR.
+The subcommand will print the XML directly to the standard output, so to use it you will have to redirect STDOUT
+to a file. The OK/error messages will not interfere, as they will be printed on STDERR rather than STDOUT.
 
 The subcommand can optionally check if the hierarchy in which to store the videos exists, as this is a
 precondition for subsequent successful processing by Springfield. Likewise, it can check if the videos
@@ -141,8 +143,16 @@ Processing the videos in the inbox takes a while. The `status` command generates
 lists the A/V items and their current status (`DONE`, `WAITING` or `FAILED`).
 
 ### Changing require-ticket
+You can change videos from public to private and vice versa with the `set-require-ticket` subcommand. This command
+changes all the videos under a given parent, so you can change collections and users at a time. Before making the
+actual changes you are requested to confirm.
 
-
+### Deleting items
+You can delete videos, presentations and collections with the `delete` subcommand. Users cannot currently be 
+deleted, even if they contain no resources anymore. This seems a bug in Springfield, as, over time it will inevitably
+result in an increasing number of unused "user" resources. The `-r` option lets you include all the referenced resources
+in a delete action. This way you can delete a whole collection without first having to manually delete all the 
+resources referenced by it. Again, the user is asked to confirm such a delete action.
 
 [Springfield Web TV]: http://www.noterik.nl/products/webtv_framework/ 
 

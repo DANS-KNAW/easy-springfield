@@ -30,7 +30,7 @@ object Command extends App
   with Smithers2
   with ListUsers
   with GetStatus
-  with CreateAddActions {
+  with CreateSpringfieldActions {
 
   import scala.language.reflectiveCalls
 
@@ -41,11 +41,11 @@ object Command extends App
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
     case Some(cmd @ opts.status) =>
-      val TABS = "%-35s %-40s %-10s\n"
+      val TABS = "%-35s %-40s %-7s %-10s\n"
       val maybeList =
         if (cmd.user.toOption.isDefined) {
           getStatusSummaries(cmd.domain(), cmd.user())
-            .map(_.map(s => TABS format(s.user, s.filename, s.status.toUpperCase)).mkString)
+            .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase)).mkString)
         }
         else {
           getUserList(cmd.domain())
@@ -53,7 +53,7 @@ object Command extends App
               _.map {
                 user =>
                   getStatusSummaries(cmd.domain(), user)
-                    .map(_.map(s => TABS format(s.user, s.filename, s.status.toUpperCase)).mkString)
+                    .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase)).mkString)
                     .recover { case _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
               }.mkString
             }
@@ -62,8 +62,8 @@ object Command extends App
       maybeList.map {
         list =>
           "\n" +
-            (TABS format("USER", "FILE", "STATUS")) +
-            (TABS format("=" * "USER".length, "=" * "FILE".length, "=" * "STATUS".length)) +
+            (TABS format("USER", "FILE", "TICKET", "STATUS")) +
+            (TABS format("=" * "USER".length, "=" * "FILE".length, "=" * "TICKET".length, "=" * "STATUS".length)) +
             list
       }
     case Some(cmd @ opts.listUsers) =>
@@ -71,16 +71,16 @@ object Command extends App
       getUserList(cmd.domain()).map(_.mkString(", "))
     case Some(cmd @ opts.delete) =>
       for {
-        list <- if (cmd.withReferencedItems()) getReferencedPaths(cmd.path()).map(_ :+ cmd.path())
+        list <- if (cmd.withReferencedItems()) getReferencedPaths(cmd.path()).map(_ :+ getCompletePath(cmd.path()))
                 else Success(Seq(cmd.path()))
         _ <- approveAction(list, """These items will be deleted.""")
         _ <- list.map(deletePath).collectResults
       } yield "Items deleted"
-    case Some(cmd @ opts.createAddActions) =>
+    case Some(cmd @ opts.`createSpringfieldActions`) =>
       val result = for {
         videos <- parseCsv(cmd.videosCsv())
-        _ <- if (cmd.skipSourceExistsCheck()) Success(())
-             else checkSourceVideosExist(videos, cmd.srcFolder())
+        _ <- if (cmd.videosFolder.isSupplied) checkSourceVideosExist(videos, cmd.videosFolder())
+             else Success(())
         parentsToCreate <- if (cmd.checkParentItems())
                              getParentPaths(videos)
                                .map(checkPathExists)
@@ -91,11 +91,14 @@ object Command extends App
       } yield (new PrettyPrinter(160, 2).format(actions), parentsToCreate)
       result.map { case (s, ps) =>
         println(s)
-        "XML generated." + (if (cmd.skipSourceExistsCheck()) " (Existence of files has NOT been checked!)"
+        "XML generated." + (if (!cmd.videosFolder.isSupplied) " (Existence of files has NOT been checked!)"
                             else "") +
-          (if (ps.nonEmpty) "\nFollowing parent items do not yet exist:\n" + ps.mkString("\n")
-           else "\nParent items have been checked and exist.")
-
+          (if (cmd.checkParentItems()) {
+            "\nParent items have been checked: " +
+              (if (ps.isEmpty) "OK"
+               else "not existing yet:\n" + ps.mkString("\n"))
+          }
+           else "\nParent items have been NOT been checked.")
       }
     case Some(cmd @ opts.createUser) =>
       createUser(cmd.user(), cmd.targetDomain()).map(_ => s"User created: ${ cmd.user() }")
@@ -112,7 +115,7 @@ object Command extends App
              |(Note that you may have to clear your browser cache after making videos private to effectively test the result.)
            """.stripMargin)
         _ <- videos.map(setRequireTicket(_, cmd.requireTicket().toBoolean)).collectResults
-      } yield s"Video(s) set to require-ticket = ${cmd.requireTicket()}"
+      } yield s"Video(s) set to require-ticket = ${ cmd.requireTicket() }"
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }
