@@ -28,7 +28,11 @@ trait EasySpringfieldApp {
     with CreateSpringfieldActions =>
   val properties = new PropertiesConfiguration(Paths.get(System.getProperty("app.home")).resolve("cfg/application.properties").toFile)
   val smithers2BaseUri: URI = new URI(properties.getString("springfield.smithers2.base-uri"))
-  val smithers2ConnectionTimeoutMs: Int = properties.getInt("springfield.smithers2-connection-timeout-ms")
-  val smithers2ReadTimoutMs: Int = properties.getInt("springfield.smithers2-read-timeout-ms")
+  val smithers2ConnectionTimeoutMs: Int = properties.getInt("springfield.smithers2.connection-timeout-ms")
+  val smithers2ReadTimoutMs: Int = properties.getInt("springfield.smithers2.read-timeout-ms")
+  val lenny: URI = new URI(properties.getString("springfield.lenny.uri"))
+  val lennyConnectionTimeoutMs: Int = properties.getInt("springfield.lenny.connection-timeout-ms")
+  val lennyReadTimeoutMs: Int = properties.getInt("springfield.lenny.read-timeout-ms")
+
   val defaultDomain: String = properties.getString("springfield.default-domain")
 }

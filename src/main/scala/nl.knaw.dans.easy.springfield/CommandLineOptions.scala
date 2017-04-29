@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.springfield
 
 import java.nio.file.{ Path, Paths }
+import java.util.UUID
 
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, singleArgConverter }
@@ -125,6 +126,22 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(setRequireTicket)
+
+  val createTicket = new Subcommand("create-ticket") {
+    descr("Creates and registers an authorization ticket for a specified presentation.")
+    val path: ScallopOption[Path] = trailArg(name = "springfield-path", descr = "The presentation to create the ticket for")
+    val expiresAfterSeconds: ScallopOption[Long] = opt(name = "expires-after-seconds", short = 'e', default = Some(60 * 5))
+    val ticket: ScallopOption[String] = opt(name = "ticket", short = 't', default = Some(UUID.randomUUID.toString))
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(createTicket)
+
+  val deleteTicket = new Subcommand("delete-ticket") {
+    descr("Delete a specified authorization ticket.")
+    val ticket: ScallopOption[String] = trailArg(name = "ticket")
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(deleteTicket)
 
   val delete = new Subcommand("delete") {
     descr("Delete the item at the specified Springfield path")

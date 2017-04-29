@@ -30,7 +30,8 @@ object Command extends App
   with Smithers2
   with ListUsers
   with GetStatus
-  with CreateSpringfieldActions {
+  with CreateSpringfieldActions
+  with Ticket {
 
   import scala.language.reflectiveCalls
 
@@ -62,8 +63,8 @@ object Command extends App
       maybeList.map {
         list =>
           "\n" +
-            (TABS format("USER", "FILE", "TICKET", "STATUS")) +
-            (TABS format("=" * "USER".length, "=" * "FILE".length, "=" * "TICKET".length, "=" * "STATUS".length)) +
+            (TABS format("USER", "VIDEO", "PRIVATE", "STATUS")) +
+            (TABS format("=" * "USER".length, "=" * "VIDEO".length, "=" * "PRIVATE".length, "=" * "STATUS".length)) +
             list
       }
     case Some(cmd @ opts.listUsers) =>
@@ -116,6 +117,10 @@ object Command extends App
            """.stripMargin)
         _ <- videos.map(setRequireTicket(_, cmd.requireTicket().toBoolean)).collectResults
       } yield s"Video(s) set to require-ticket = ${ cmd.requireTicket() }"
+    case Some(cmd @ opts.createTicket) =>
+      createTicket(getCompletePath(cmd.path()), cmd.ticket(), cmd.expiresAfterSeconds()).map(_ => "Ticket created.")
+    case Some(cmd @ opts.deleteTicket) =>
+      deleteTicket(cmd.ticket()).map(_ => "Ticket deleted.")
     case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
       Try { "Unknown command" }
   }

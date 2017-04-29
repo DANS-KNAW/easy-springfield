@@ -15,6 +15,8 @@ SYNOPSIS
         <videos-csv> > springfield-actions.xml   
     easy-springfield status [-u, --user <arg>][-d, --domain <arg>]
     easy-springfield set-require-ticket <springfield-path> {true|false}
+    easy-springfield create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] <springfield-path>
+    easy-springfield delete-ticket <ticket>
     easy-springfield delete [-r, --with-referenced-items] <springfield-path>
     
     
