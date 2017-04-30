@@ -27,24 +27,31 @@ import scala.xml.Elem
 case class Video(srcVideo: Path, targetDomain: String, targetUser: String, targetCollection: String, targetPresentation: String, targetVideo: String, requireTicket: Boolean = true)
 
 trait CreateSpringfieldActions {
+  val defaultDomain: String
+
   def parseCsv(file: Path): Try[Seq[Video]] = Try {
     val rawContent = Source.fromFile(file.toFile).mkString
     val format = CSVFormat.RFC4180
       .withRecordSeparator(',')
-      .withHeader("SRC-VIDEO", "DOMAIN", "USER", "COLLECTION", "PRESENTATION", "TARGET-VIDEO", "REQUIRE-TICKET")
+      .withHeader()
       .withSkipHeaderRecord(true)
     val parser = CSVParser.parse(rawContent, format)
     parser.getRecords.asScala
-      .map((row: CSVRecord) =>
+      .map { row: CSVRecord =>
+        val targetDomain = Try { row.get("DOMAIN") }.getOrElse(defaultDomain)
+        val srcVideo = Paths.get(row.get("SRC-VIDEO"))
+        val targetVideo = Try { row.get("TARGET-VIDEO") }.getOrElse(srcVideo.getFileName.toString)
+
         Video(
-          srcVideo = Paths.get(row.get("SRC-VIDEO")),
-          targetDomain = row.get("DOMAIN"),
+          srcVideo = srcVideo,
+          targetDomain = targetDomain,
           targetUser = row.get("USER"),
           targetCollection = row.get("COLLECTION"),
           targetPresentation = row.get("PRESENTATION"),
-          targetVideo = row.get("TARGET-VIDEO"),
-          requireTicket = row.get("REQUIRE-TICKET").toBoolean))
-    // TODO: validate input
+          targetVideo = targetVideo,
+          requireTicket = row.get("REQUIRE-TICKET").toBoolean)
+        // TODO: validate input
+      }
   }
 
   def checkSourceVideosExist(videos: Seq[Video], srcFolder: Path): Try[Unit] = {
