@@ -9,13 +9,14 @@ SYNOPSIS
 
     easy-springfield list-users [-d, --domain <arg>]
     easy-springfield create-user [-d, --target-domain <arg>]
-    easy-springfield create-collection [-t, --title <arg>] [-d, --description <arg>] 
+    easy-springfield create-collection [-t, --title <arg>] [-d, --description <arg>] \
         [--target-domain <arg>] <collection> <target-user>
-    easy-springfield create-springfield-actions [-p, --check-parent-items] [-v, --videos-folder <arg>]
+    easy-springfield create-springfield-actions [-p, --check-parent-items] [-v, --videos-folder <arg>] \
         <videos-csv> > springfield-actions.xml   
     easy-springfield status [-u, --user <arg>][-d, --domain <arg>]
     easy-springfield set-require-ticket <springfield-path> {true|false}
-    easy-springfield create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] <springfield-path>
+    easy-springfield create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] \
+        <springfield-path>
     easy-springfield delete-ticket <ticket>
     easy-springfield delete [-r, --with-referenced-items] <springfield-path>
     
@@ -149,9 +150,15 @@ You can change videos from public to private and vice versa with the `set-requir
 changes all the videos under a given parent, so you can change collections and users at a time. Before making the
 actual changes you are requested to confirm.
 
+### Creating and deleting tickets
+For debugging purposes it is sometimes convenient to manually create authorization tickets for presentations. 
+The `create-ticket` and `delete-ticket` enable you to do exactly that. You can optionally provided the ticket yourself and 
+specify the number of seconds it must be valid. Viewing the list of current tickets is *not* supported. However,
+The Springfield Lenny service provides an HTML-based list for this at `http://yourstreamingserver:8080/lenny/acl/ticket`
+
 ### Deleting items
 You can delete videos, presentations and collections with the `delete` subcommand. Users cannot currently be 
-deleted, even if they contain no resources anymore. This seems a bug in Springfield, as, over time it will inevitably
+deleted, even if they contain no resources anymore. This seems a bug in Springfield, as&mdash;over time&mdash;it will inevitably
 result in an increasing number of unused "user" resources. The `-r` option lets you include all the referenced resources
 in a delete action. This way you can delete a whole collection without first having to manually delete all the 
 resources referenced by it. Again, the user is asked to confirm such a delete action.
@@ -160,4 +167,100 @@ resources referenced by it. Again, the user is asked to confirm such a delete ac
 
 ARGUMENTS
 ---------
+
+    --help      Show help message
+          --version   Show version of this program
+    
+    Subcommand: list-users - List users in a given domain
+          --help   Show help message
+    
+     trailing arguments:
+      domain (required)   the domain of which to list the users (default = dans)
+    ---
+    
+    Subcommand: create-user - Create a new user in the Springfield database. This does NOT generate a springfield-actions XML but
+    instead creates the user in Springfield right away.
+    
+      -d, --target-domain  <arg>   The target domain in which to create the user
+                                   (default = dans)
+          --help                   Show help message
+    
+     trailing arguments:
+      user (required)   User name for the new user
+    ---
+    
+    Subcommand: create-collection - Create a new collection in the Springfield database. This does NOT generate a springfield-actions XML but
+    instead creates the collection in Springfield right away.
+    
+      -d, --description  <arg>     Description for the new collection (default = )
+          --target-domain  <arg>   The target domain in which to create the user
+                                   (default = dans)
+      -t, --title  <arg>           Title for the new collection (default = )
+          --help                   Show help message
+    
+     trailing arguments:
+      collection (required)    Name for the collection
+      target-user (required)   Existing user under which to store the collection
+    ---
+    
+    Subcommand: create-springfield-actions - Create Springfield Actions XML containing add-actions for A/V items specified in a CSV file
+    with lines describing videos with the following columns: SRC, DOMAIN, USER, COLLECTION, PRESENTATION, FILE,
+    REQUIRE-TICKET.
+    
+      -p, --check-parent-items     Check that parent items (domain, user,
+                                   collection) exist
+      -v, --videos-folder  <arg>   Folder relative to which to resolve the SRC
+                                   column in the CSV
+          --help                   Show help message
+    
+     trailing arguments:
+      video-csv (required)   CSV file describing the videos
+    ---
+    
+    Subcommand: status - Retrieve the status of content offered for ingestion into Springfield
+      -d, --domain  <arg>   limit to videos within this domain (default = dans)
+      -u, --user  <arg>     limit to videos owned by this user
+          --help            Show help message
+    ---
+    
+    Subcommand: set-require-ticket - Sets or clears the 'require-ticket' flag for the specified presentation
+          --help   Show help message
+    
+     trailing arguments:
+      springfield-path (required)   The parent of items to change
+      require-ticket (required)     true|false
+    ---
+    
+    Subcommand: create-ticket - Creates and registers an authorization ticket for a specified presentation.
+      -e, --expires-after-seconds  <arg>    (default = 300)
+      -t, --ticket  <arg>
+                                           (default = 5f30d674-1e02-4cb2-95e7-eec3b7ed6e45)
+          --help                           Show help message
+    
+     trailing arguments:
+      springfield-path (required)   The presentation to create the ticket for
+    ---
+    
+    Subcommand: delete-ticket - Delete a specified authorization ticket.
+          --help   Show help message
+    
+     trailing arguments:
+      ticket (required)
+    ---
+    
+    Subcommand: delete - Delete the item at the specified Springfield path
+      -r, --with-referenced-items   also remove items reference from <path>,
+                                    recursively
+          --help                    Show help message
+    
+     trailing arguments:
+      path (required)   the path pointing item to remove
+    ---
+
+
+
+
+INSTALLATION AND CONFIGURATION
+------------------------------
+
 

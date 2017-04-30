@@ -35,10 +35,18 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
        |
        |Usage:
        |
-       |$printedName status [-d, --domain <domain>] [-u, --user <user>]
-       |$printedName ls <path>
-       |$printedName rm <path>
-       |$printedName add ...
+       |$printedName list-users [-d, --domain <arg>]
+       |$printedName create-user [-d, --target-domain <arg>]
+       |$printedName create-collection [-t, --title <arg>] [-d, --description <arg>] \\
+       |    [--target-domain <arg>] <collection> <target-user>
+       |$printedName create-springfield-actions [-p, --check-parent-items] [-v, --videos-folder <arg>] \\
+       |    <videos-csv> > springfield-actions.xml
+       |$printedName status [-u, --user <arg>][-d, --domain <arg>]
+       |$printedName set-require-ticket <springfield-path> {true|false}
+       |$printedName create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] \\
+       |    <springfield-path>
+       |$printedName delete-ticket <ticket>
+       |$printedName delete [-r, --with-referenced-items] <springfield-path>
        |
             |Options:
        |""".stripMargin)
