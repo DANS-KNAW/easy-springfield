@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.springfield
 
 import java.net.URI
-import java.nio.file.Paths
+import java.nio.file.{ Files, Paths }
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
@@ -26,7 +26,12 @@ trait EasySpringfieldApp {
     with Smithers2
     with ListUsers
     with CreateSpringfieldActions =>
-  val properties = new PropertiesConfiguration(Paths.get(System.getProperty("app.home")).resolve("cfg/application.properties").toFile)
+  private val cfgPath = Seq(
+    Paths.get("/usr/local/etc/dans/easy-springfield/"),
+    Paths.get(System.getProperty("app.home")).resolve("cfg/"))
+
+  private val cfg = cfgPath.find(Files.exists(_)).get
+  val properties = new PropertiesConfiguration(cfg.resolve("application.properties").toFile)
   val smithers2BaseUri: URI = new URI(properties.getString("springfield.smithers2.base-uri"))
   val smithers2ConnectionTimeoutMs: Int = properties.getInt("springfield.smithers2.connection-timeout-ms")
   val smithers2ReadTimoutMs: Int = properties.getInt("springfield.smithers2.read-timeout-ms")
