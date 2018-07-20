@@ -12,7 +12,7 @@ SYNOPSIS
     easy-springfield create-collection [-t, --title <arg>] [-d, --description <arg>] \
         [--target-domain <arg>] <collection> <target-user>
     easy-springfield create-presentation [-t, --title <arg>] [-d, --description <arg>] \\
-            [-r, --require-ticket] [--target-domain <arg>] <collection> <target-user>
+            [-r, --require-ticket] [--target-domain <arg>] <target-user>
     easy-springfield create-springfield-actions [-p, --check-parent-items] [-v, --videos-folder <arg>] \
         <videos-csv> > springfield-actions.xml   
     easy-springfield status [-u, --user <arg>][-d, --domain <arg>]

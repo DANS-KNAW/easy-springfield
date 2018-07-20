@@ -39,7 +39,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
        |$printedName create-collection [-t, --title <arg>] [-d, --description <arg>] \\
        |    [--target-domain <arg>] <collection> <target-user>
        |$printedName create-presentation [-t, --title <arg>] [-d, --description <arg>] \\
-       |    [-r, --require-ticket] [--target-domain <arg>] <collection> <target-user>
+       |    [-r, --require-ticket] [--target-domain <arg>] <target-user>
        |$printedName create-springfield-actions [-p, --check-parent-items] [-v, --videos-folder <arg>] \\
        |    <videos-csv> > springfield-actions.xml
        |$printedName status [-u, --user <arg>][-d, --domain <arg>]
