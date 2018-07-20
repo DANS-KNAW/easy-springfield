@@ -57,11 +57,3 @@ class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
     new File("pom.xml") should containTrimmed(clo.description)
   }
 }
-
-
-
-
-
-
-
-
