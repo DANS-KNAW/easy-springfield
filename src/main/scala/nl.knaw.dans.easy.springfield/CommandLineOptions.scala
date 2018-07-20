@@ -27,13 +27,9 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   printedName = "easy-springfield"
   private val _________ = " " * printedName.length
   private val SUBCOMMAND_SEPARATOR = "---\n"
-  version(s"$printedName v$version")
-  banner(
+  val description: String = s"""Tools for managing a Springfield WebTV server."""
+  val synopsis: String =
     s"""
-       |Manage Springfield Web TV
-       |
-       |Usage:
-       |
        |$printedName list-users <domain>
        |$printedName create-user [-d, --target-domain <arg>] <username>
        |$printedName create-collection [-t, --title <arg>] [-d, --description <arg>] \\
@@ -50,8 +46,20 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
        |$printedName delete [-r, --with-referenced-items] <springfield-path>
        |$printedName add-video-to-presentation <video> <name> <springfield-path>
        |$printedName add-presentation-to-collection <presentation> <name> <springfield-path>
+     """.stripMargin
+
+  version(s"$printedName v$version")
+
+  banner(
+    s"""
+       |  $description
        |
-            |Options:
+       |Usage:
+       |
+       |$synopsis
+       |
+       |Options:
+       |
        |""".stripMargin)
 
 

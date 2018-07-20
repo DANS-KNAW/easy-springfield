@@ -20,7 +20,7 @@ import better.files.File._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 
-case class Configuration(version: String, properties: PropertiesConfiguration)
+case class Configuration(version: String, properties: PropertiesConfiguration )
 
 object Configuration extends DebugEnhancedLogging {
 

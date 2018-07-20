@@ -11,10 +11,10 @@ SYNOPSIS
     easy-springfield create-user [-d, --target-domain <arg>] <username>
     easy-springfield create-collection [-t, --title <arg>] [-d, --description <arg>] \
         [--target-domain <arg>] <collection> <target-user>
-    easy-springfield create-presentation [-t, --title <arg>] [-d, --description <arg>] \\
-            [-r, --require-ticket] [--target-domain <arg>] <target-user>
+    easy-springfield create-presentation [-t, --title <arg>] [-d, --description <arg>] \
+        [-r, --require-ticket] [--target-domain <arg>] <target-user>
     easy-springfield create-springfield-actions [-p, --check-parent-items] [-v, --videos-folder <arg>] \
-        <videos-csv> > springfield-actions.xml   
+        <videos-csv> > springfield-actions.xml
     easy-springfield status [-u, --user <arg>][-d, --domain <arg>]
     easy-springfield set-require-ticket <springfield-path> {true|false}
     easy-springfield create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] \
