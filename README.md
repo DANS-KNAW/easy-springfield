@@ -184,7 +184,7 @@ To fix problems in the Springfield hierarchy the following subcommands can be us
 * `add-video-to-presentation` - this adds a video that is already in Springfield to a presentation.
 * `add-presentation-to-collection` - this adds a presentation that is already in Springfield to a collection.
 
-Together will the `delete` subcommand, used without the `-r` option, it is possible to repair the Springfield hierarchy, if it
+Together with the `delete` subcommand, used without the `-r` option, it is possible to repair the Springfield hierarchy, if it
 becomes corrupted.
 
 ### Adding subtitles to existing videos
