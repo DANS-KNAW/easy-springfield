@@ -69,6 +69,11 @@ paths. If you configure the default domain to `dans` the above examples then bec
 
 Everywhere else where a domain must be specified, it will then also default to the value you configured.
 
+#### Referids
+In some cases springfield paths are used to include an item by reference into another item. For example a
+collection is built up using springfield-paths to presentations. These springfield-paths are then called
+`referid`s. 
+
 ### Examining raw Springfield metadata 
 Although `easy-springfield` lets you manage a considerable part of the Springfield repository without your
 having to interact with `smithers2` directly, it is often convenient to examine its raw output. You can
@@ -343,7 +348,7 @@ ARGUMENTS
 
         Subcommand: add-subtitles-to-presentation -
          Adds one or more subtitles file(s) to an existing presentation. If the presentation contains multiple videos
-         the same number of WebVTT files must be specified; they will be added in order to the respective videos.
+         the same number of WebVTT files must be specified; they will be added in the specified order to the respective videos.
 
           -l, --language  <arg>   the ISO 639-1 (two letter) language code
           -h, --help              Show help message
