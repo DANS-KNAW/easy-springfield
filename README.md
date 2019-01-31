@@ -188,7 +188,7 @@ Together with the `delete` subcommand, used without the `-r` option, it is possi
 becomes corrupted.
 
 ### Adding subtitles to existing videos
-For videos that have been ingested without subtitles you can still add those subtitles later. You will need to execute this command
+For videos that have been ingested without subtitles, you can still add those later. You will need to execute this command
 as the `tomcat` user, so that it can write the subtitles files to the  `/data/dansstreaming` directory tree.
 
 * `add-subtitles-to-video` - this adds a subtitles file to an existing video.
