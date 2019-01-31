@@ -281,7 +281,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   val addSubtitlesToPresentation = new Subcommand("add-subtitles-to-presentation") {
     descr(
       """
-        | Adds one or more subtitles file to an existing presentation. If the presentation contains multiple videos
+        | Adds one or more subtitles file(s) to an existing presentation. If the presentation contains multiple videos
         | the same number of WebVTT files must be specified; they will be added in order to the respective videos.
       """.stripMargin)
     val languageCode: ScallopOption[String] = opt(name = "language",
