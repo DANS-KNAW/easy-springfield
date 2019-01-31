@@ -189,7 +189,7 @@ becomes corrupted.
 
 ### Adding subtitles to existing videos
 For videos that have been ingested without subtitles you can still add those subtitles later. You will need to execute this command
-as the tomcat user, so that it can write the subtitles files to the  `/data/dansstreaming` directory tree.
+as the `tomcat` user, so that it can write the subtitles files to the  `/data/dansstreaming` directory tree.
 
 * `add-subtitles-to-video` - this adds a subtitles file to an existing video.
 * `add-subtitles-to-presentation` - this adds subtitles files to the videos in an existing presentation.
