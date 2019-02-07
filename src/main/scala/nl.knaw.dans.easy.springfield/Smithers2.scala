@@ -21,11 +21,10 @@ import java.nio.file.{ Path, Paths }
 
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-import scalaj.http.Http
+import scalaj.http.{ Http, HttpResponse }
 
 import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Elem, XML }
-
 
 trait Smithers2 {
   this: DebugEnhancedLogging =>
@@ -40,6 +39,7 @@ trait Smithers2 {
     debug(s"Smithers2 URI: $uri")
     for {
       response <- http("GET", uri)
+      _ = logResponseBody(response)
       if response.code == 200
       xml <- checkResponseOk(response.body)
     } yield xml
@@ -74,9 +74,15 @@ trait Smithers2 {
     debug(s"Smithers2 URI: $uri")
     for {
       response <- http("PUT", uri, requireTicket.toString)
+      _ = logResponseBody(response)
       if response.code == 200
       _ <- checkResponseOk(response.body)
     } yield ()
+  }
+
+  private def logResponseBody(response: HttpResponse[Array[Byte]]): Unit = {
+    val xml = XML.load(new ByteArrayInputStream(response.body))
+    logger.info(s"response code = ${ response.code } body = ${ xml }")
   }
 
   /**
@@ -194,7 +200,6 @@ trait Smithers2 {
       if response.code == 200
       _ <- checkResponseOk(response.body)
     } yield ()
-
   }
 
   def addPresentationRefToCollection(presentationReferId: Path, presentationName: String, collection: Path): Try[Unit] = {
@@ -232,12 +237,10 @@ trait Smithers2 {
     else Failure(new IllegalArgumentException(s"$collection does not appear to be a collection Springfield path. Expected format: [domain/<d>/]user/<u>/collection/<name>"))
   }
 
-
   def checkNameLength(name: String): Try[Unit] = {
     if (name.length <= MAX_NAME_LENGTH) Success(())
     else Failure(new IllegalArgumentException(s"Name is longer than 100 chars: $name"))
   }
-
 
   def getCompletePath(path: Path): Path = {
     if (path.getName(0).toString == "domain") path
@@ -260,7 +263,6 @@ trait Smithers2 {
       .timeout(connTimeoutMs = smithers2ConnectionTimeoutMs, readTimeoutMs = smithers2ReadTimoutMs)
       .asBytes
   }
-
 
   def checkResponseOk(content: Array[Byte]): Try[Elem] = {
     /*

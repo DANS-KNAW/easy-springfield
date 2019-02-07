@@ -108,7 +108,7 @@ object Command extends App
       }
     case Some(cmd @ opts.setRequireTicket) =>
       for {
-        videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 && p.getName(p.getNameCount - 2).toString == "video"))
+        videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 &&  Set("audio", "video").contains(p.getName(p.getNameCount - 2).toString)))
         _ <- approveAction(videos,
           s"""
              |WARNING: THIS ACTION COULD EXPOSE VIDEOS TO UNAUTHORIZED VIEWERS.
@@ -146,8 +146,7 @@ object Command extends App
         _ <- checkPathIsRelative(cmd.presentation())
         _ <- addPresentationRefToCollection(getCompletePath(cmd.presentation()), cmd.name(), cmd.collection())
       } yield "Presentation reference added."
-    case _ => throw new IllegalArgumentException(s"Unknown command: ${ opts.subcommand }")
-      Try { "Unknown command" }
+    case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
 
   result.map(msg => Console.err.println(s"OK: $msg"))
