@@ -40,8 +40,9 @@ object Command extends App
 
   type FeedBackMessage = String
 
-  val configuration = Configuration(File(System.getProperty("app.home")))
-  val opts = new CommandLineOptions(args, properties, configuration.version)
+  private val avNames = Set("audio", "video")
+  private val configuration = Configuration(File(System.getProperty("app.home")))
+  private val opts = new CommandLineOptions(args, properties, configuration.version)
   opts.verify()
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
@@ -108,7 +109,7 @@ object Command extends App
       }
     case Some(cmd @ opts.setRequireTicket) =>
       for {
-        videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 &&  Set("audio", "video").contains(p.getName(p.getNameCount - 2).toString)))
+        videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 && Set("audio", "video").contains(p.getName(p.getNameCount - 2).toString)))
         _ <- approveAction(videos,
           s"""
              |WARNING: THIS ACTION COULD EXPOSE VIDEOS TO UNAUTHORIZED VIEWERS.
@@ -151,7 +152,6 @@ object Command extends App
 
   result.map(msg => Console.err.println(s"OK: $msg"))
     .doIfFailure { case e => Console.err.println(s"FAILED: ${ e.getMessage }") }
-
 
   private def checkPathIsRelative(path: Path): Try[Unit] =
     Try { require(!path.isAbsolute, "Path MUST NOT start with a slash") }

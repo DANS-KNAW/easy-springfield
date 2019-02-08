@@ -82,7 +82,7 @@ trait Smithers2 {
 
   private def logResponseBody(response: HttpResponse[Array[Byte]]): Unit = {
     val xml = XML.load(new ByteArrayInputStream(response.body))
-    logger.info(s"response code = ${ response.code } body = ${ xml }")
+    logger.info(s"response body = ${ xml }")
   }
 
   /**
