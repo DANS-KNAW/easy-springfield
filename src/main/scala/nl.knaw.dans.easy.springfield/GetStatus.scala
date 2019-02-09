@@ -20,20 +20,25 @@ import scala.xml.Elem
 case class AvStatusSummary(user: String, filename: String, status: String, requireTicket: Boolean)
 
 trait GetStatus {
+  this: Smithers2 =>
 
   def getStatus(forUser: String, avType: String, parent: Elem): Seq[AvStatusSummary] = {
     for {
       video <- parent \ avType
       requireTicket = video \ "properties" \ "private"
-      raw2 <- video \ s"raw${avType}"
+      raw2 <- video \ s"raw${ avType }"
       if raw2 \@ "id" == "2"
       filename <- raw2 \ "properties" \ "filename"
       status = raw2 \ "properties" \ "status"
+      job = raw2 \ "properties" \ "job"
     } yield
       AvStatusSummary(
         forUser,
-        filename.text, if (status.isEmpty) "waiting"
-                       else status.head.text,
+        filename.text,
+        if (status.isEmpty) "waiting"
+        else status.head.text,
         requireTicket = requireTicket.isEmpty || requireTicket.head.text.toBoolean)
   }
 }
+
+
