@@ -17,10 +17,9 @@ package nl.knaw.dans.easy.springfield
 
 import scala.xml.Elem
 
-case class AvStatusSummary(user: String, filename: String, status: String, requireTicket: Boolean)
+case class AvStatusSummary(user: String, filename: String, status: String, jobRef: String, requireTicket: Boolean)
 
 trait GetStatus {
-  this: Smithers2 =>
 
   def getStatus(forUser: String, avType: String, parent: Elem): Seq[AvStatusSummary] = {
     for {
@@ -37,6 +36,8 @@ trait GetStatus {
         filename.text,
         if (status.isEmpty) "waiting"
         else status.head.text,
+        if (job.isEmpty) ""
+        else job.head.text,
         requireTicket = requireTicket.isEmpty || requireTicket.head.text.toBoolean)
   }
 }

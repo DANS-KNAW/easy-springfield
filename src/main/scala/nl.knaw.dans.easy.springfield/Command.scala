@@ -33,6 +33,7 @@ object Command extends App
   with ListUsers
   with ListCollections
   with GetStatus
+  with GetProgressOfCurrentJobs
   with CreateSpringfieldActions
   with Ticket {
 
@@ -81,11 +82,12 @@ object Command extends App
            else "\nParent items have been NOT been checked.")
       }
     case Some(cmd @ opts.status) =>
-      val TABS = "%-35s %-40s %-7s %-10s\n"
+      val TABS = "%-35s %-40s %-7s %-10s %8s\n"
+      val progress = getAllProgress(cmd.domain())
       val maybeList =
         if (cmd.user.toOption.isDefined) {
           getStatusSummaries(cmd.domain(), cmd.user())
-            .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase)).mkString)
+            .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase, getProgressOfJob(progress.get, s.jobRef, s.status))).mkString) // TOOD progress.get
         }
         else {
           getUserList(cmd.domain())
@@ -93,7 +95,7 @@ object Command extends App
               _.map {
                 user =>
                   getStatusSummaries(cmd.domain(), user)
-                    .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase)).mkString)
+                    .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase, getProgressOfJob(progress.get, s.jobRef, s.status))).mkString)
                     .recover { case _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
               }.mkString
             }
@@ -102,8 +104,8 @@ object Command extends App
       maybeList.map {
         list =>
           "\n" +
-            (TABS format("USER", "A/V FILE", "PRIVATE", "STATUS")) +
-            (TABS format("=" * "USER".length, "=" * "A/V FILE".length, "=" * "PRIVATE".length, "=" * "STATUS".length)) +
+            (TABS format("USER", "A/V FILE", "PRIVATE", "STATUS", "PROGRESS")) +
+            (TABS format("=" * "USER".length, "=" * "A/V FILE".length, "=" * "PRIVATE".length, "=" * "STATUS".length, "="* "PROGRESS".length)) +
             list
       }
     case Some(cmd @ opts.setRequireTicket) =>
@@ -169,6 +171,20 @@ object Command extends App
       xml <- getXmlFromPath(Paths.get("domain", domain, "user", user, "collection"))
       collections <- Try { listCollections(xml) }
     } yield collections
+  }
+
+  private def getAllProgress(domain: String): Try[Map[JobRef, Progress]] = {
+    for {
+      videoQueue <- getXmlFromPath(Paths.get("domain", domain, "service", "momar", "queue", "high"))
+      videoProgress = getProgressOfCurrentJobs(videoQueue, "video")
+      audioQueue <- getXmlFromPath(Paths.get("domain", domain, "service", "willie", "queue", "high"))
+      audioProgress = getProgressOfCurrentJobs(audioQueue, "audio")
+    } yield videoProgress ++ audioProgress
+  }
+
+  private def getProgressOfJob(allProgress: Map[JobRef, Progress], jobRef: JobRef, status: String): String = {
+    if (status equalsIgnoreCase "DONE") "100%"
+    else allProgress.get(jobRef).map(p => s"$p%").getOrElse("n/a")
   }
 
   private def getStatusSummaries(domain: String, user: String): Try[Seq[AvStatusSummary]] = {
