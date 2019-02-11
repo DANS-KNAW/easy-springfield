@@ -109,7 +109,7 @@ object Command extends App
       }
     case Some(cmd @ opts.setRequireTicket) =>
       for {
-        videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 && Set("audio", "video").contains(p.getName(p.getNameCount - 2).toString)))
+        videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 && avNames.contains(p.getName(p.getNameCount - 2).toString)))
         _ <- approveAction(videos,
           s"""
              |WARNING: THIS ACTION COULD EXPOSE VIDEOS TO UNAUTHORIZED VIEWERS.
