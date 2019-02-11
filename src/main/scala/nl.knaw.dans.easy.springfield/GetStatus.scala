@@ -30,16 +30,23 @@ trait GetStatus {
       filename <- raw2 \ "properties" \ "filename"
       status = raw2 \ "properties" \ "status"
       job = raw2 \ "properties" \ "job"
+      screensJob = video \ "screens" \ "properties" \ "joburi"
     } yield
       AvStatusSummary(
         forUser,
         filename.text,
-        if (status.isEmpty) "waiting"
+        if (screensJob.nonEmpty) "stills"
+        else if (status.isEmpty) {
+          if (job.isEmpty) "waiting"
+          else if (isTranscodingJob(job.head.text)) "transcode"
+          else "unkown"
+        }
         else status.head.text,
-        if (job.isEmpty) ""
-        else job.head.text,
+        job.map(_.text).headOption.getOrElse(""),
         requireTicket = requireTicket.isEmpty || requireTicket.head.text.toBoolean)
   }
+
+  private def isTranscodingJob(jobRef: String): Boolean = {
+    (jobRef contains "momar") || (jobRef contains "willie")
+  }
 }
-
-

@@ -83,31 +83,24 @@ object Command extends App
       }
     case Some(cmd @ opts.status) =>
       val TABS = "%-35s %-40s %-7s %-10s %8s\n"
-      val progress = getAllProgress(cmd.domain())
-      val maybeList =
-        if (cmd.user.toOption.isDefined) {
-          getStatusSummaries(cmd.domain(), cmd.user())
-            .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase, getProgressOfJob(progress.get, s.jobRef, s.status))).mkString) // TOOD progress.get
-        }
-        else {
-          getUserList(cmd.domain())
-            .map {
-              _.map {
-                user =>
-                  getStatusSummaries(cmd.domain(), user)
-                    .map(_.map(s => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase, getProgressOfJob(progress.get, s.jobRef, s.status))).mkString)
-                    .recover { case _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
-              }.mkString
-            }
-        }
-
-      maybeList.map {
-        list =>
-          "\n" +
-            (TABS format("USER", "A/V FILE", "PRIVATE", "STATUS", "PROGRESS")) +
-            (TABS format("=" * "USER".length, "=" * "A/V FILE".length, "=" * "PRIVATE".length, "=" * "STATUS".length, "="* "PROGRESS".length)) +
-            list
-      }
+      for {
+        allProgress <- getAllProgress(cmd.domain())
+        formatSummary = (s: AvStatusSummary) => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase, getProgressOfJob(allProgress, s.jobRef, s.status))
+        list <- if (cmd.user.toOption.isDefined)
+                  getStatusSummaries(cmd.domain(), cmd.user()).map(_.map(formatSummary).mkString)
+                else getUserList(cmd.domain())
+                  .map {
+                    _.map {
+                      user =>
+                        getStatusSummaries(cmd.domain(), user)
+                          .map(_.map(formatSummary).mkString)
+                          .recover { case _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
+                    }.mkString
+                  }
+      } yield "\n" +
+        (TABS format("USER", "A/V FILE", "PRIVATE", "STATUS", "PROGRESS")) +
+        (TABS format("=" * "USER".length, "=" * "A/V FILE".length, "=" * "PRIVATE".length, "=" * "STATUS".length, "=" * "PROGRESS".length)) +
+        list
     case Some(cmd @ opts.setRequireTicket) =>
       for {
         videos <- getReferencedPaths(cmd.path()).map(_.filter(p => p.getNameCount > 1 && p.getName(p.getNameCount - 2).toString == "video"))
@@ -155,7 +148,6 @@ object Command extends App
   result.map(msg => Console.err.println(s"OK: $msg"))
     .doIfFailure { case e => Console.err.println(s"FAILED: ${ e.getMessage }") }
 
-
   private def checkPathIsRelative(path: Path): Try[Unit] =
     Try { require(!path.isAbsolute, "Path MUST NOT start with a slash") }
 
@@ -177,13 +169,16 @@ object Command extends App
     for {
       videoQueue <- getXmlFromPath(Paths.get("domain", domain, "service", "momar", "queue", "high"))
       videoProgress = getProgressOfCurrentJobs(videoQueue, "video")
+      _ = debug(s"Video progress: $videoProgress")
       audioQueue <- getXmlFromPath(Paths.get("domain", domain, "service", "willie", "queue", "high"))
       audioProgress = getProgressOfCurrentJobs(audioQueue, "audio")
+      _ = debug(s"Audio progress: $audioProgress")
     } yield videoProgress ++ audioProgress
   }
 
   private def getProgressOfJob(allProgress: Map[JobRef, Progress], jobRef: JobRef, status: String): String = {
     if (status equalsIgnoreCase "DONE") "100%"
+    else if (status equalsIgnoreCase "STILLS") "~100%"
     else allProgress.get(jobRef).map(p => s"$p%").getOrElse("n/a")
   }
 
