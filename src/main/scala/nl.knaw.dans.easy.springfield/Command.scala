@@ -94,7 +94,7 @@ object Command extends App
                       user =>
                         getStatusSummaries(cmd.domain(), user)
                           .map(_.map(formatSummary).mkString)
-                          .recover { case _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
+                          .getOrRecover(_ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", ""))
                     }.mkString
                   }
       } yield "\n" +
