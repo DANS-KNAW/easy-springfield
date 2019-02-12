@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.easy.springfield
 
+import nl.knaw.dans.easy.springfield.AvType._
+
 class GetProgressOfCurrentJobsSpec extends TestSupportFixture with GetProgressOfCurrentJobs {
 
   "getProgressOfCurrentJobs" should "return a map from jobref to a progress (a percentage completed)" in {
@@ -49,7 +51,9 @@ class GetProgressOfCurrentJobsSpec extends TestSupportFixture with GetProgressOf
         </queue>
       </fsxml>
 
-    getProgressOfCurrentJobs(queueXml, "audio") should be(Map("/domain/dans/service/willie/queue/high/job/42" -> "5"))
+    getProgressOfCurrentJobs(queueXml, audio) should contain only (
+      "/domain/dans/service/willie/queue/high/job/42" -> "5"
+      )
   }
 
   it should "do the same if there are multiple elements in the queue" in {
@@ -105,11 +109,10 @@ class GetProgressOfCurrentJobsSpec extends TestSupportFixture with GetProgressOf
         </queue>
       </fsxml>
 
-    getProgressOfCurrentJobs(queueXml, "audio") should be(
-      Map(
-        "/domain/dans/service/willie/queue/high/job/41" -> "95",
-        "/domain/dans/service/willie/queue/high/job/42" -> "5",
-      ))
+    getProgressOfCurrentJobs(queueXml, audio) should contain only(
+      "/domain/dans/service/willie/queue/high/job/41" -> "95",
+      "/domain/dans/service/willie/queue/high/job/42" -> "5",
+    )
   }
 
   it should "leave out jobs without a status" in {
@@ -158,6 +161,8 @@ class GetProgressOfCurrentJobsSpec extends TestSupportFixture with GetProgressOf
         </queue>
       </fsxml>
 
-    getProgressOfCurrentJobs(queueXml, "audio") should be(Map("/domain/dans/service/willie/queue/high/job/42" -> "5"))
+    getProgressOfCurrentJobs(queueXml, audio) should contain only (
+      "/domain/dans/service/willie/queue/high/job/42" -> "5"
+      )
   }
 }

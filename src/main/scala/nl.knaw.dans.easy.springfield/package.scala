@@ -20,4 +20,8 @@ package object springfield {
 
   val MAX_NAME_LENGTH = 100
 
+  object AvType extends Enumeration {
+    type AvType = Value
+    val audio, video = Value
+  }
 }

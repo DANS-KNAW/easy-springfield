@@ -21,6 +21,7 @@ import java.util.UUID
 import better.files.File
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import nl.knaw.dans.easy.springfield.AvType._
 
 import scala.io.StdIn
 import scala.util.{ Failure, Success, Try }
@@ -86,17 +87,15 @@ object Command extends App
       for {
         allProgress <- getAllProgress(cmd.domain())
         formatSummary = (s: AvStatusSummary) => TABS format(s.user, s.filename, s.requireTicket, s.status.toUpperCase, getProgressOfJob(allProgress, s.jobRef, s.status))
-        list <- if (cmd.user.toOption.isDefined)
-                  getStatusSummaries(cmd.domain(), cmd.user()).map(_.map(formatSummary).mkString)
-                else getUserList(cmd.domain())
-                  .map {
-                    _.map {
-                      user =>
-                        getStatusSummaries(cmd.domain(), user)
-                          .map(_.map(formatSummary).mkString)
-                          .recover { case _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }.get
-                    }.mkString
-                  }
+        list <- cmd.user.toOption
+          .map(user => getStatusSummaries(cmd.domain(), user).map(_.map(formatSummary).mkString))
+          .getOrElse {
+            getUserList(cmd.domain()).map(_.map { user =>
+              getStatusSummaries(cmd.domain(), user)
+                .map(_.map(formatSummary).mkString)
+                .getOrRecover { _ => TABS format(user, "*** COULD NOT RETRIEVE DATA ***", "") }
+            }.mkString)
+          }
       } yield "\n" +
         (TABS format("USER", "A/V FILE", "PRIVATE", "STATUS", "PROGRESS")) +
         (TABS format("=" * "USER".length, "=" * "A/V FILE".length, "=" * "PRIVATE".length, "=" * "STATUS".length, "=" * "PROGRESS".length)) +
@@ -168,10 +167,10 @@ object Command extends App
   private def getAllProgress(domain: String): Try[Map[JobRef, Progress]] = {
     for {
       videoQueue <- getXmlFromPath(Paths.get("domain", domain, "service", "momar", "queue", "high"))
-      videoProgress = getProgressOfCurrentJobs(videoQueue, "video")
+      videoProgress = getProgressOfCurrentJobs(videoQueue, video)
       _ = debug(s"Video progress: $videoProgress")
       audioQueue <- getXmlFromPath(Paths.get("domain", domain, "service", "willie", "queue", "high"))
-      audioProgress = getProgressOfCurrentJobs(audioQueue, "audio")
+      audioProgress = getProgressOfCurrentJobs(audioQueue, audio)
       _ = debug(s"Audio progress: $audioProgress")
     } yield videoProgress ++ audioProgress
   }

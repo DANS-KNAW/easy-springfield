@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import scala.xml.Elem
+import scala.xml.{ Elem, NodeSeq }
 
 case class AvStatusSummary(user: String, filename: String, status: String, jobRef: String, requireTicket: Boolean)
 
@@ -35,15 +35,19 @@ trait GetStatus {
       AvStatusSummary(
         forUser,
         filename.text,
-        if (screensJob.nonEmpty) "stills"
-        else if (status.isEmpty) {
-          if (job.isEmpty) "waiting"
-          else if (isTranscodingJob(job.head.text)) "transcode"
-          else "unkown"
-        }
-        else status.head.text,
+        calcStatus(job, screensJob, status),
         job.map(_.text).headOption.getOrElse(""),
         requireTicket = requireTicket.isEmpty || requireTicket.head.text.toBoolean)
+  }
+
+  private def calcStatus(transCodingJob: NodeSeq, screensJob: NodeSeq, status: NodeSeq): String = {
+    if (screensJob.nonEmpty) "stills"
+    else if (status.isEmpty) {
+      if (transCodingJob.isEmpty) "waiting"
+      else if (isTranscodingJob(transCodingJob.head.text)) "transcode"
+      else "unkown"
+    }
+    else status.head.text
   }
 
   private def isTranscodingJob(jobRef: String): Boolean = {

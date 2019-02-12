@@ -19,20 +19,17 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.xml.Elem
 
-trait GetProgressOfCurrentJobs extends DebugEnhancedLogging {
+trait GetProgressOfCurrentJobs {
   type JobRef = String
-  type JobType = String // audio or video
+  type JobType = AvType.Value
   type Progress = String
 
   def getProgressOfCurrentJobs(queue: Elem, jobType: JobType): Map[JobRef, Progress] = {
-      val jobs = queue \ "queue" \ "job"
-      jobs.map {
-        job =>
-          val optId = (job \ s"raw$jobType" \ "properties" \ "job").map(_.text).headOption
-          val optProgress = (job \ "status" \ "properties" \ "details").map(_.text).headOption
-          (optId, optProgress)
-      }.collect {
-        case (Some(id), Some(progress)) => (id, progress)
-      }.toMap
+    (queue \ "queue" \ "job")
+      .flatMap(job => for {
+        optId <- (job \ s"raw$jobType" \ "properties" \ "job").map(_.text).headOption
+        optProgress <- (job \ "status" \ "properties" \ "details").map(_.text).headOption
+      } yield (optId, optProgress))
+      .toMap
   }
 }
