@@ -218,7 +218,8 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
 
   val deleteTicket = new Subcommand("delete-ticket") {
     descr("Deletes a specified authorization ticket.")
-    val ticket: ScallopOption[String] = trailArg(name = "ticket",
+    val
+    ticket: ScallopOption[String] = trailArg(name = "ticket",
       descr = "the ticket to delete",
       required = true)
     footer(SUBCOMMAND_SEPARATOR)
@@ -293,6 +294,5 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(addSubtitlesToPresentation)
-
   footer("")
 }

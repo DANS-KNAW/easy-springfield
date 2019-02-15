@@ -141,6 +141,11 @@ object Command extends App
         _ <- checkPathIsRelative(cmd.presentation())
         _ <- addPresentationRefToCollection(getCompletePath(cmd.presentation()), cmd.name(), cmd.collection())
       } yield "Presentation reference added."
+    case Some(cmd @ opts.`addSubtitlesToVideo`) =>
+      for {
+        _ <- checkPathIsRelative(cmd.video())
+        _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), Option(cmd.languageCode()), cmd.subtitles())
+      } yield "Subtitles added to video."
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
 
