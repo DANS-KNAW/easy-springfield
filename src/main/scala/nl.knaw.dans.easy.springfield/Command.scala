@@ -19,6 +19,7 @@ import java.nio.file.{ Path, Paths }
 import java.util.UUID
 
 import better.files.File
+import javafx.scene.media.SubtitleTrack
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.easy.springfield.AvType._
@@ -31,6 +32,7 @@ object Command extends App
   with DebugEnhancedLogging
   with EasySpringfieldApp
   with Smithers2
+  with FileComponent
   with ListUsers
   with ListCollections
   with GetStatus
@@ -144,9 +146,18 @@ object Command extends App
     case Some(cmd @ opts.`addSubtitlesToVideo`) =>
       for {
         _ <- checkPathIsRelative(cmd.video())
-        _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), Option(cmd.languageCode()), cmd.subtitles())
+        _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), cmd.languageCode(), cmd.subtitles())
       } yield "Subtitles added to video."
+    case Some(cmd @ opts.addSubtitlesToPresentation) =>
+      for {
+        _ <- checkPathIsRelative(cmd.presentation())
+        completePath = getCompletePath(cmd.presentation())
+        _ <- addSubtitlesToPresentation(cmd.languageCode(), completePath, cmd.subtitles())
+      } yield "Subtitles added to presentation"
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
+  }
+
+  private def addSubtitlesToPresentation(language: String, presentation: Path, subtitles: List[String]): Try[Unit] = Try {
   }
 
   result.map(msg => Console.err.println(s"OK: $msg"))

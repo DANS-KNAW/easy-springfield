@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.file.{ Path, Paths }
 
-import better.files.File
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import scalaj.http.Http
@@ -28,7 +27,7 @@ import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Elem, XML }
 
 trait Smithers2 {
-  this: DebugEnhancedLogging =>
+  this: DebugEnhancedLogging with FileComponent =>
   val smithers2BaseUri: URI
   val smithers2ConnectionTimeoutMs: Int
   val smithers2ReadTimoutMs: Int
@@ -177,20 +176,19 @@ trait Smithers2 {
       }
   }
 
-  def addSubtitlesToVideo(videoRefId: Path, languageCode: Option[String], subtitles: Path): Try[Unit] = {
+  def addSubtitlesToVideo(videoRefId: Path, languageCode: String, subtitles: Path): Try[Unit] = {
     for {
       _ <- checkVideoReferId(videoRefId)
-      _ <- putSubtitles(videoRefId, languageCode, subtitles)
-      _ <- Try(File(subtitles).copyTo(File(videoRefId.getParent)))
+      adjustedFileName <- createLanguageAdjustedfileName(subtitles, languageCode)
+      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName)
+      _ <- putSubtitles(videoRefId, languageCode, adjustedFileName)
     } yield ()
   }
 
-  private def putSubtitles(videoRefId: Path, languageCode: Option[String], subtitles: Path): Try[Unit] = Try {
-    val extension = languageCode.map(lang => "_".concat(lang)).getOrElse("")
-    val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webvtt$extension").resolve(subtitles.getFileName))
+  private def putSubtitles(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
+    val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webbvtt_$languageCode"))
     debug(s"Smithers2 URI: $uri")
-    val content = File(subtitles).contentAsString
-    http("PUT", uri, content).flatMap(response => {
+    http("PUT", uri, fileName).flatMap(response => {
       if (response.code == 200) checkResponseOk(response.body)
       else Failure(new IllegalStateException(s"response code '${ response.code }' was not equal to 200, body = '${ response.body }'"))
     })

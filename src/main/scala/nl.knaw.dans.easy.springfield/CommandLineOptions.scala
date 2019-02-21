@@ -65,7 +65,6 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
        |
        |""".stripMargin)
 
-
   private implicit val fileConverter = singleArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
 
   private def resolveTildeToHomeDir(s: String): String =
@@ -218,8 +217,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
 
   val deleteTicket = new Subcommand("delete-ticket") {
     descr("Deletes a specified authorization ticket.")
-    val
-    ticket: ScallopOption[String] = trailArg(name = "ticket",
+    val ticket: ScallopOption[String] = trailArg(name = "ticket",
       descr = "the ticket to delete",
       required = true)
     footer(SUBCOMMAND_SEPARATOR)
