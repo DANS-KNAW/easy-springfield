@@ -19,12 +19,23 @@ import java.nio.file.Paths
 
 import org.scalatest._
 
-import scala.util.Success
-
 class FileComponentSpec extends FlatSpec with Matchers with CustomMatchers with FileComponent {
 
 
   "createLanguageAdjustedfileName" should "change a fileName called webvtt.vtt with language nl to nl_webvtt_nl.vtt" in {
-    createLanguageAdjustedfileName(Paths.get("/path/to/nowehere/webvtt.vtt"), "nl") shouldBe Success("nl_webvtt_nl.vtt")
+    createLanguageAdjustedfileName(Paths.get("/path/to/nowehere/webvtt.vtt"), "nl")  shouldBe s"nl_webvtt_nl.vtt"
+
+  }
+
+  it should "do ? without name extension after the dot" in {
+    createLanguageAdjustedfileName(Paths.get("/path/to/nowehere/webvtt."), "nl")  shouldBe s"nl_webvtt_nl."
+  }
+
+  it should "do ? without extension" in {
+    createLanguageAdjustedfileName(Paths.get("/path/to/nowehere/webvtt"), "nl")  shouldBe s"nl_webvtt_nl."
+  }
+
+  it should "do ? with an empty language" in {
+    createLanguageAdjustedfileName(Paths.get("/path/to/nowehere/webvtt.webvtt"), "")  shouldBe s"_webvtt_.webvtt"
   }
 }

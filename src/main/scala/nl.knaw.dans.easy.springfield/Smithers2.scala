@@ -21,6 +21,7 @@ import java.nio.file.{ Path, Paths }
 
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import org.apache.commons.io.FilenameUtils
 import scalaj.http.Http
 
 import scala.util.{ Failure, Success, Try }
@@ -176,17 +177,41 @@ trait Smithers2 {
       }
   }
 
+  def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[String]): Try[Unit] = Try {
+    if (subtitles.isEmpty) Success(())
+    else {
+      val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
+      val pathToPresentation = presentation.resolve(relativePathToVideoProps)
+      for {
+        _ <- checkPresentation(presentation)
+        _ <- putSubtitlesToPresentation(pathToPresentation, language, subtitles.head, "webvtt")
+        _ <- putSubtitlesToPresentation(pathToPresentation, language, FilenameUtils.removeExtension(subtitles.head).concat(".srt"), "srt")
+        _ <- addSubtitlesToPresentation(videoNumber + 1, language, presentation, subtitles.tail)
+      } yield ()
+    }
+  }
+
+  private def putSubtitlesToPresentation(videoRefInPresentation: Path, languageCode: String, fileName: String, fileTpe: String): Try[Elem] = {
+    val uri = path2Uri(videoRefInPresentation.resolve("properties").resolve(s"${ fileTpe }$languageCode"))
+    debug(s"Smithers2 URI: $uri")
+    http("PUT", uri, fileName).flatMap(response => {
+      if (response.code == 200) checkResponseOk(response.body)
+      else Failure(new IllegalStateException(s"response code '${ response.code }' was not equal to 200, body = '${ response.body }'"))
+    })
+  }
+
   def addSubtitlesToVideo(videoRefId: Path, languageCode: String, subtitles: Path, dataBaseDir: Path): Try[Unit] = {
     for {
       _ <- checkVideoReferId(videoRefId)
-      adjustedFileName <- createLanguageAdjustedfileName(subtitles, languageCode)
-      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName, dataBaseDir)
-      _ <- putSubtitles(videoRefId, languageCode, adjustedFileName)
+      //    adjustedFileName = createLanguageAdjustedfileName(subtitles, languageCode)
+      _ <- moveSubtitlesToDir(videoRefId, subtitles, subtitles.getFileName.toString, dataBaseDir)
+      _ <- putSubtitles(videoRefId, languageCode, subtitles.getFileName.toString, "webvtt")
+      _ <- putSubtitles(videoRefId, languageCode, FilenameUtils.removeExtension(subtitles.getFileName.toString).concat(".srt"), "srt")
     } yield ()
   }
 
-  private def putSubtitles(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
-    val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webbvtt_$languageCode"))
+  private def putSubtitles(videoRefId: Path, languageCode: String, fileName: String, fileType: String): Try[Elem] = {
+    val uri = path2Uri(videoRefId.resolve("properties").resolve(s"${ fileType }_$languageCode"))
     debug(s"Smithers2 URI: $uri")
     http("PUT", uri, fileName).flatMap(response => {
       if (response.code == 200) checkResponseOk(response.body)

@@ -29,7 +29,11 @@ trait FileComponent {
     FileUtils.copyFile(subtitles.toFile, resolvedDestination.resolve(adjustedFileName).toFile)
   }
 
-  def createLanguageAdjustedfileName(subTitlesPath: Path, language: String): Try[String] = Try {
+  def createLanguageAdjustedfileName(subTitlesPath: Path, language: String): String = {
+    createLanguageAdjustedfileName(subTitlesPath, language, FilenameUtils.getExtension(subTitlesPath.getFileName.toString))
+  }
+
+  def createLanguageAdjustedfileName(subTitlesPath: Path, language: String, extension: String): String = {
     val fileName = subTitlesPath.getFileName.toString
     s"${ language }_${ FilenameUtils.removeExtension(fileName) }_${ language }.${ FilenameUtils.getExtension(fileName) }" // sub.vtt => nl_sub_nl.vtt
   }

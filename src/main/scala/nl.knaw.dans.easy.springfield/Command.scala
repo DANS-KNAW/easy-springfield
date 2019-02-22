@@ -22,6 +22,7 @@ import better.files.File
 import nl.knaw.dans.easy.springfield.AvType._
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import org.rogach.scallop.ScallopOption
 
 import scala.io.StdIn
 import scala.util.{ Failure, Success, Try }
@@ -145,19 +146,27 @@ object Command extends App
     case Some(cmd @ opts.`addSubtitlesToVideo`) =>
       for {
         _ <- checkPathIsRelative(cmd.video())
+        _ <- validateLanguage(cmd.languageCode)
         dataBaseDir =  Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
         _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), cmd.languageCode(), cmd.subtitles(), dataBaseDir)
       } yield "Subtitles added to video."
     case Some(cmd @ opts.addSubtitlesToPresentation) =>
       for {
-        _ <- checkPathIsRelative(cmd.presentation())
-        completePath = getCompletePath(cmd.presentation())
-        _ <- addSubtitlesToPresentation(cmd.languageCode(), completePath, cmd.subtitles())
+        presentationpath <- Try(cmd.presentation())
+        _ <- checkPathIsRelative(presentationpath)
+        completePath = getCompletePath(presentationpath)
+        _ <- checkPresentation(completePath)
+        dataBaseDir =  Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
+        absolutePathToPresentation = dataBaseDir.resolve(completePath)
+        _ <- addSubtitlesToPresentation(1, cmd.languageCode(), absolutePathToPresentation, cmd.subtitles())
       } yield "Subtitles added to presentation"
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
 
-  private def addSubtitlesToPresentation(language: String, presentation: Path, subtitles: List[String]): Try[Unit] = Try {
+  private def validateLanguage(languageOpt: ScallopOption[String]): Try[String] = Try {
+    languageOpt
+      .toOption
+      .getOrElse(throw new IllegalArgumentException("Mandatory option --language <language> was not given"))
   }
 
   result.map(msg => Console.err.println(s"OK: $msg"))
