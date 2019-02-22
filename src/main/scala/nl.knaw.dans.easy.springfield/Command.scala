@@ -19,10 +19,9 @@ import java.nio.file.{ Path, Paths }
 import java.util.UUID
 
 import better.files.File
-import javafx.scene.media.SubtitleTrack
+import nl.knaw.dans.easy.springfield.AvType._
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-import nl.knaw.dans.easy.springfield.AvType._
 
 import scala.io.StdIn
 import scala.util.{ Failure, Success, Try }
@@ -146,7 +145,8 @@ object Command extends App
     case Some(cmd @ opts.`addSubtitlesToVideo`) =>
       for {
         _ <- checkPathIsRelative(cmd.video())
-        _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), cmd.languageCode(), cmd.subtitles())
+        dataBaseDir =  Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
+        _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), cmd.languageCode(), cmd.subtitles(), dataBaseDir)
       } yield "Subtitles added to video."
     case Some(cmd @ opts.addSubtitlesToPresentation) =>
       for {

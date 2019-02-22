@@ -176,11 +176,11 @@ trait Smithers2 {
       }
   }
 
-  def addSubtitlesToVideo(videoRefId: Path, languageCode: String, subtitles: Path): Try[Unit] = {
+  def addSubtitlesToVideo(videoRefId: Path, languageCode: String, subtitles: Path, dataBaseDir: Path): Try[Unit] = {
     for {
       _ <- checkVideoReferId(videoRefId)
       adjustedFileName <- createLanguageAdjustedfileName(subtitles, languageCode)
-      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName)
+      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName, dataBaseDir)
       _ <- putSubtitles(videoRefId, languageCode, adjustedFileName)
     } yield ()
   }
