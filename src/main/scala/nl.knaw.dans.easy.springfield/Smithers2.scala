@@ -21,7 +21,6 @@ import java.nio.file.{ Path, Paths }
 
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-import org.apache.commons.io.FilenameUtils
 import scalaj.http.Http
 
 import scala.util.{ Failure, Success, Try }
@@ -209,17 +208,7 @@ trait Smithers2 {
     })
   }
 
-  def addSubtitlesToVideo(videoRefId: Path, languageCode: String, subtitles: Path, dataBaseDir: Path): Try[Unit] = {
-    for {
-      _ <- checkVideoReferId(videoRefId)
-      adjustedFileName = createLanguageAdjustedfileName(subtitles, languageCode)
-      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName, dataBaseDir)
-      _ <- putSubtitlesToVideo(videoRefId, languageCode, adjustedFileName)
-      _ = logger.info(s"added '$subtitles' with language '$languageCode' to video '$videoRefId'")
-    } yield ()
-  }
-
-  private def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
+  def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
     val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webvtt_$languageCode"))
     debug(s"Smithers2 URI: $uri")
     http("PUT", uri, fileName).flatMap(response => {

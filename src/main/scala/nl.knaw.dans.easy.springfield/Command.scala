@@ -147,8 +147,12 @@ object Command extends App
       for {
         _ <- checkPathIsRelative(cmd.video())
         _ <- validateLanguageCodeIsPresent(cmd.languageCode)
-        dataBaseDir =  Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
-        _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), cmd.languageCode(), cmd.subtitles(), dataBaseDir)
+        dataBaseDir = Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
+        videoRefId = getCompletePath(cmd.video())
+        _ <- checkVideoReferId(videoRefId)
+        adjustedFileName = createLanguageAdjustedfileName(cmd.subtitles(), cmd.languageCode())
+        _ <- moveSubtitlesToDir(videoRefId, cmd.subtitles(), adjustedFileName, dataBaseDir)
+        _ <- putSubtitlesToVideo(videoRefId, cmd.languageCode(), adjustedFileName)
       } yield "Subtitles added to video."
     case Some(cmd @ opts.addSubtitlesToPresentation) =>
       for {
@@ -156,7 +160,7 @@ object Command extends App
         _ <- checkPathIsRelative(cmd.presentation())
         completePath = getCompletePath(cmd.presentation())
         _ <- checkPresentation(completePath)
-        dataBaseDir =  Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
+        dataBaseDir = Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
         absolutePathToPresentation = dataBaseDir.resolve(completePath)
         _ <- addSubtitlesToPresentation(1, cmd.languageCode(), absolutePathToPresentation, cmd.subtitles())
       } yield "Subtitles added to presentation"
