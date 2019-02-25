@@ -146,15 +146,15 @@ object Command extends App
     case Some(cmd @ opts.`addSubtitlesToVideo`) =>
       for {
         _ <- checkPathIsRelative(cmd.video())
-        _ <- validateLanguage(cmd.languageCode)
+        _ <- validateLanguageCodeIsPresent(cmd.languageCode)
         dataBaseDir =  Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
         _ <- addSubtitlesToVideo(getCompletePath(cmd.video()), cmd.languageCode(), cmd.subtitles(), dataBaseDir)
       } yield "Subtitles added to video."
     case Some(cmd @ opts.addSubtitlesToPresentation) =>
       for {
-        presentationpath <- Try(cmd.presentation())
-        _ <- checkPathIsRelative(presentationpath)
-        completePath = getCompletePath(presentationpath)
+        _ <- validateLanguageCodeIsPresent(cmd.languageCode)
+        _ <- checkPathIsRelative(cmd.presentation())
+        completePath = getCompletePath(cmd.presentation())
         _ <- checkPresentation(completePath)
         dataBaseDir =  Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
         absolutePathToPresentation = dataBaseDir.resolve(completePath)
@@ -163,14 +163,14 @@ object Command extends App
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
 
-  private def validateLanguage(languageOpt: ScallopOption[String]): Try[String] = Try {
+  result.map(msg => Console.err.println(s"OK: $msg"))
+    .doIfFailure { case e => Console.err.println(s"FAILED: ${ e.getMessage }") }
+
+  private def validateLanguageCodeIsPresent(languageOpt: ScallopOption[String]): Try[String] = Try {
     languageOpt
       .toOption
       .getOrElse(throw new IllegalArgumentException("Mandatory option --language <language> was not given"))
   }
-
-  result.map(msg => Console.err.println(s"OK: $msg"))
-    .doIfFailure { case e => Console.err.println(s"FAILED: ${ e.getMessage }") }
 
   private def checkPathIsRelative(path: Path): Try[Unit] =
     Try { require(!path.isAbsolute, "Path MUST NOT start with a slash") }
