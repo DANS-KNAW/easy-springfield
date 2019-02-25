@@ -35,6 +35,6 @@ trait FileComponent {
 
   def createLanguageAdjustedfileName(subTitlesPath: Path, language: String, extension: String): String = {
     val fileName = subTitlesPath.getFileName.toString
-    s"${ language }_${ FilenameUtils.removeExtension(fileName) }_${ language }.${ FilenameUtils.getExtension(fileName) }" // sub.vtt => nl_sub_nl.vtt
+    s"${ language }_${ FilenameUtils.removeExtension(fileName) }_$language.$extension" // sub.vtt => nl_sub_nl.vtt
   }
 }

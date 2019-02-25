@@ -177,22 +177,32 @@ trait Smithers2 {
       }
   }
 
+  /**
+   * Adds a list of subtitles to a presentation
+   *
+   * @param videoNumber
+   * @param language the language of the subtitles
+   * @Param presentation the path towards the presentation
+   * @return
+   */
   def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[String]): Try[Unit] = Try {
     if (subtitles.isEmpty) Success(())
     else {
       val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
       val pathToPresentation = presentation.resolve(relativePathToVideoProps)
+      debug(s"absolutePath to video in presentation PATH: $pathToPresentation")
       for {
         _ <- checkPresentation(presentation)
-        _ <- putSubtitlesToPresentation(pathToPresentation, language, subtitles.head, "webvtt")
-        _ <- putSubtitlesToPresentation(pathToPresentation, language, FilenameUtils.removeExtension(subtitles.head).concat(".srt"), "srt")
+        _ <- putSubtitlesToPresentation(pathToPresentation, language, createLanguageAdjustedfileName(Paths.get(subtitles.head), language), "webvtt" )
+        _ <- putSubtitlesToPresentation(pathToPresentation, language, createLanguageAdjustedfileName(Paths.get(subtitles.head), language, "srt"), "srt")
+        _ = logger.info(s"added '${ Paths.get(subtitles.head) }' to presentation '$pathToPresentation'")
         _ <- addSubtitlesToPresentation(videoNumber + 1, language, presentation, subtitles.tail)
       } yield ()
     }
   }
 
-  private def putSubtitlesToPresentation(videoRefInPresentation: Path, languageCode: String, fileName: String, fileTpe: String): Try[Elem] = {
-    val uri = path2Uri(videoRefInPresentation.resolve("properties").resolve(s"${ fileTpe }$languageCode"))
+  private def putSubtitlesToPresentation(videoRefInPresentation: Path, languageCode: String, fileName: String, fileTypeElement: String): Try[Elem] = {
+    val uri = path2Uri(videoRefInPresentation.resolve("properties").resolve(s"${ fileTypeElement }_$languageCode"))
     debug(s"Smithers2 URI: $uri")
     http("PUT", uri, fileName).flatMap(response => {
       if (response.code == 200) checkResponseOk(response.body)
@@ -203,15 +213,16 @@ trait Smithers2 {
   def addSubtitlesToVideo(videoRefId: Path, languageCode: String, subtitles: Path, dataBaseDir: Path): Try[Unit] = {
     for {
       _ <- checkVideoReferId(videoRefId)
-      //    adjustedFileName = createLanguageAdjustedfileName(subtitles, languageCode)
-      _ <- moveSubtitlesToDir(videoRefId, subtitles, subtitles.getFileName.toString, dataBaseDir)
-      _ <- putSubtitles(videoRefId, languageCode, subtitles.getFileName.toString, "webvtt")
-      _ <- putSubtitles(videoRefId, languageCode, FilenameUtils.removeExtension(subtitles.getFileName.toString).concat(".srt"), "srt")
+      adjustedFileName = createLanguageAdjustedfileName(subtitles, languageCode)
+      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName, dataBaseDir)
+      _ <- putSubtitlesToVideo(videoRefId, languageCode, adjustedFileName, "webvtt")
+      _ <- putSubtitlesToVideo(videoRefId, languageCode, createLanguageAdjustedfileName(subtitles, languageCode, "srt"), "srt")
+      _ = logger.info(s"added '$subtitles' with language '$languageCode' to video '$videoRefId'")
     } yield ()
   }
 
-  private def putSubtitles(videoRefId: Path, languageCode: String, fileName: String, fileType: String): Try[Elem] = {
-    val uri = path2Uri(videoRefId.resolve("properties").resolve(s"${ fileType }_$languageCode"))
+  private def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String, fileTypeElement: String): Try[Elem] = {
+    val uri = path2Uri(videoRefId.resolve("properties").resolve(s"${ fileTypeElement }_$languageCode"))
     debug(s"Smithers2 URI: $uri")
     http("PUT", uri, fileName).flatMap(response => {
       if (response.code == 200) checkResponseOk(response.body)
