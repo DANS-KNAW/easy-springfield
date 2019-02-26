@@ -184,7 +184,7 @@ trait Smithers2 {
    * @Param presentation the path towards the presentation
    * @return
    */
-  def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[String]): Try[Unit] = Try {
+  final def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[String]): Try[Unit] = Try {
     if (subtitles.isEmpty) Success(())
     else {
       val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
