@@ -22,10 +22,10 @@ import org.scalatest._
 class FileComponentSpec extends FlatSpec with Matchers with CustomMatchers with FileComponent {
 
   "createLanguageAdjustedfileName" should "change a fileName called webvtt.vtt with language nl to nl_webvtt_nl.vtt" in {
-    createLanguageAdjustedFileName(Paths.get("/path/to/nowehere/webvtt.vtt"), "nl") shouldBe s"nl_webvtt.vtt"
+    createLanguageAdjustedFileName(Paths.get("/path/to/nowhere/webvtt.vtt"), "nl") shouldBe s"nl_webvtt.vtt"
   }
 
   it should "only add a underscore to the name when an empty language is provided" in {
-    createLanguageAdjustedFileName(Paths.get("/path/to/nowehere/webvtt.vtt"), "") shouldBe s"_webvtt.vtt"
+    createLanguageAdjustedFileName(Paths.get("/path/to/nowhere/webvtt.vtt"), "") shouldBe s"_webvtt.vtt"
   }
 }
