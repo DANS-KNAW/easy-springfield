@@ -46,6 +46,7 @@ object Command extends App
 
   private val avNames = Set("audio", "video")
   private val configuration = Configuration(File(System.getProperty("app.home")))
+  private val iso639: ISO639 = ISO639(File(System.getProperty("app.home")))
   private val opts = new CommandLineOptions(args, properties, configuration.version)
   opts.verify()
 
@@ -146,23 +147,23 @@ object Command extends App
     case Some(cmd @ opts.`addSubtitlesToVideo`) =>
       for {
         _ <- checkPathIsRelative(cmd.video())
-        _ <- validateLanguageCodeIsPresent(cmd.languageCode)
+        language <- validateThatLanguageCodeIsValid(cmd.languageCode)
         dataBaseDir = Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
         videoRefId = getCompletePath(cmd.video())
         _ <- checkVideoReferId(videoRefId)
-        adjustedFileName = createLanguageAdjustedfileName(cmd.subtitles(), cmd.languageCode())
+        adjustedFileName = createLanguageAdjustedFileName(cmd.subtitles(), language)
         _ <- moveSubtitlesToDir(videoRefId, cmd.subtitles(), adjustedFileName, dataBaseDir)
-        _ <- putSubtitlesToVideo(videoRefId, cmd.languageCode(), adjustedFileName)
+        _ <- putSubtitlesToVideo(videoRefId, language, adjustedFileName)
       } yield "Subtitles added to video."
     case Some(cmd @ opts.addSubtitlesToPresentation) =>
       for {
-        _ <- validateLanguageCodeIsPresent(cmd.languageCode)
+        language <- validateThatLanguageCodeIsValid(cmd.languageCode)
         _ <- checkPathIsRelative(cmd.presentation())
         completePath = getCompletePath(cmd.presentation())
         _ <- checkPresentation(completePath)
         dataBaseDir = Paths.get(properties.getString("springfield.data.base-dir", "/data/dansstreaming"))
         absolutePathToPresentation = dataBaseDir.resolve(completePath)
-        _ <- addSubtitlesToPresentation(1, cmd.languageCode(), absolutePathToPresentation, cmd.subtitles())
+        _ <- addSubtitlesToPresentation(1, language, absolutePathToPresentation, cmd.subtitles())
       } yield "Subtitles added to presentation"
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
@@ -170,10 +171,13 @@ object Command extends App
   result.map(msg => Console.err.println(s"OK: $msg"))
     .doIfFailure { case e => Console.err.println(s"FAILED: ${ e.getMessage }") }
 
-  private def validateLanguageCodeIsPresent(languageOpt: ScallopOption[String]): Try[String] = Try {
-    languageOpt
-      .toOption
+  private def validateThatLanguageCodeIsValid(languageOpt: ScallopOption[String]): Try[String] = Try {
+    val languageCode = languageOpt.toOption
       .getOrElse(throw new IllegalArgumentException("Mandatory option --language <language> was not given"))
+    if (!iso639.isAValidLanguageCode(languageCode)) {
+      throw new IllegalArgumentException(s"The provided language code '$languageCode' is currently not supported by the ISO-639-1 standard.\nSupported languages are:\n ${ iso639.getSupportedCodes.mkString("\n") }")
+    }
+    languageCode
   }
 
   private def checkPathIsRelative(path: Path): Try[Unit] =

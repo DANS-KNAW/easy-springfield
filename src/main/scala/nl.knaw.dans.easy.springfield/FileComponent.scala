@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.springfield
 
 import java.nio.file.Path
 
-import org.apache.commons.io.{ FileUtils, FilenameUtils }
+import org.apache.commons.io.FileUtils
 
 import scala.util.Try
 
@@ -29,12 +29,7 @@ trait FileComponent {
     FileUtils.copyFile(subtitles.toFile, resolvedDestination.resolve(adjustedFileName).toFile)
   }
 
-  def createLanguageAdjustedfileName(subTitlesPath: Path, language: String): String = {
-    createLanguageAdjustedfileName(subTitlesPath, language, FilenameUtils.getExtension(subTitlesPath.getFileName.toString))
-  }
-
-  def createLanguageAdjustedfileName(subTitlesPath: Path, language: String, extension: String): String = {
-    val fileName = subTitlesPath.getFileName.toString
-    s"${ language }_${ FilenameUtils.removeExtension(fileName) }_$language.$extension" // sub.vtt => nl_sub_nl.vtt
+  def createLanguageAdjustedFileName(subTitlesPath: Path, language: String): String = {
+    s"${ language }_${ subTitlesPath.getFileName }" // sub.vtt => nl_sub.vtt)
   }
 }

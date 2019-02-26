@@ -192,7 +192,7 @@ trait Smithers2 {
       debug(s"absolutePath to video in presentation PATH: $pathToPresentation")
       for {
         _ <- checkPresentation(presentation)
-        _ <- putSubtitlesToPresentation(pathToPresentation, language, createLanguageAdjustedfileName(Paths.get(subtitles.head), language))
+        _ <- putSubtitlesToPresentation(pathToPresentation, language, createLanguageAdjustedFileName(presentation, language))
         _ = logger.info(s"added '${ Paths.get(subtitles.head) }' to presentation '$pathToPresentation'")
         _ <- addSubtitlesToPresentation(videoNumber + 1, language, presentation, subtitles.tail)
       } yield ()

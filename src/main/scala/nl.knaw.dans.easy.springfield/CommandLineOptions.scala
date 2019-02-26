@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.springfield
 import java.nio.file.{ Path, Paths }
 
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.rogach.scallop.{ singleArgConverter, ScallopConf, ScallopOption, Subcommand }
+import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, singleArgConverter }
 
 class CommandLineOptions(args: Array[String], properties: PropertiesConfiguration, version: String) extends ScallopConf(args) {
   appendDefaultToDescription = true
@@ -268,11 +268,13 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   val addSubtitlesToVideo = new Subcommand("add-subtitles-to-video") {
     descr("Adds a subtitles file to an existing video.")
     val languageCode: ScallopOption[String] = opt(name = "language",
-      descr = "the ISO 639-1 (two letter) language code")
+      descr = "the ISO 639-1 (two letter) language code",
+      required = true)
     val video: ScallopOption[Path] = trailArg(name = "video",
       descr = "the referid of the video")
     val subtitles: ScallopOption[Path] = trailArg(name = "webvtt-file",
-      descr = "path to the WebVTT subtitles file to add")
+      descr = "path to the WebVTT subtitles file to add",
+      required = true)
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(addSubtitlesToVideo)
