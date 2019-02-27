@@ -21,7 +21,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 import scala.collection.JavaConverters._
 
-case class ISO639(version: String, properties: PropertiesConfiguration) {
+case class ISO639(version: String, properties: PropertiesConfiguration) { //TODO should this class have versioning?
   def isAValidLanguageCode(code: String): Boolean = {
     Option(properties.getString(code)).isDefined
   }
@@ -37,9 +37,9 @@ case class ISO639(version: String, properties: PropertiesConfiguration) {
       .toList
   }
 
-  def getSupportedCodesWithName: List[(String, String)] = {
-    getSupportedCodes
-      .map(key => (key, properties.getString(key)))
+  def getSupportedCodesWithName: Map[String, String] = {
+    getSupportedCodes.flatMap(key => Map(key -> properties.getString(key)))
+      .toMap
   }
 }
 

@@ -176,30 +176,20 @@ trait Smithers2 {
       }
   }
 
-  /**
-   * Adds a list of subtitles to a presentation, recursive function
-   *
-   * @param videoNumber
-   * @param language the language of the subtitles
-   * @Param presentation the path towards the presentation
-   * @return
-   */
-  final def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[String]): Try[Unit] = Try {
-    if (subtitles.isEmpty) Success(())
-    else {
-      val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
-      val pathToPresentation = presentation.resolve(relativePathToVideoProps)
-      debug(s"absolutePath to video in presentation PATH: $pathToPresentation")
-      for {
-        _ <- checkPresentation(presentation)
-        _ <- putSubtitlesToPresentation(pathToPresentation, language, createLanguageAdjustedFileName(presentation, language))
-        _ = logger.info(s"added '${ Paths.get(subtitles.head) }' to presentation '$pathToPresentation'")
-        _ <- addSubtitlesToPresentation(videoNumber + 1, language, presentation, subtitles.tail)
-      } yield ()
-    }
+  def getVideoRefIdForVideoInPresentation(presentation: Path, id: String): Try[String] = {
+    val uri = path2Uri(presentation)
+    for {
+      responseBody <- http("GET", uri).map(response => response.body)
+         videoRef = extractVideoRefFromPresentationForVideoId(id, responseBody) //remove /
+    } yield videoRef
   }
 
-  private def putSubtitlesToPresentation(videoRefInPresentation: Path, languageCode: String, fileName: String): Try[Elem] = {
+  private def extractVideoRefFromPresentationForVideoId(id: String, responseBody: Array[Byte]): String = {
+    ((XML.loadString(responseBody.map(_.toChar).mkString("")) \\ "video")
+      .filter(node => (node \\ "@id").text == id) \\ "@referid").text.substring(1)
+  }
+
+  def putSubtitlesToPresentation(videoRefInPresentation: Path, languageCode: String, fileName: String): Try[Elem] = {
     val uri = path2Uri(videoRefInPresentation.resolve("properties").resolve(s"webvtt_$languageCode"))
     debug(s"Smithers2 URI: $uri")
     http("PUT", uri, fileName).flatMap(response => {

@@ -23,8 +23,8 @@ import scala.util.Try
 
 trait FileComponent {
 
-  def moveSubtitlesToDir(relativeDestination: Path, subtitles: Path, adjustedFileName: String, dataBaseDir: Path): Try[Unit] = Try {
-    val resolvedDestination = dataBaseDir.resolve(relativeDestination) //TODO make configurable?
+  def moveSubtitlesToDir(relativeDestination: Path, subtitles: Path, adjustedFileName: String, springFieldBaseDir: Path): Try[Unit] = Try {
+    val resolvedDestination = springFieldBaseDir.resolve(relativeDestination) //TODO make configurable?
     println(s"copying sub titles '${ subtitles.getFileName }' to destination '${ resolvedDestination.resolve(adjustedFileName) }'")
     FileUtils.copyFile(subtitles.toFile, resolvedDestination.resolve(adjustedFileName).toFile)
   }
