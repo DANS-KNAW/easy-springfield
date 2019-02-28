@@ -186,7 +186,7 @@ trait Smithers2 {
 
   //TODO this code can probably be improved
   private def extractVideoRefFromPresentationForVideoId(id: String, responseBody: Array[Byte]): String = {
-    val pathAsString = ((XML.loadString(responseBody.map(_.toChar).mkString("")) \\ "video")
+    val pathAsString = ((XML.load(new ByteArrayInputStream(responseBody)) \\ "video")
       .filter(node => (node \\ "@id").text == id) \\ "@referid").text //TODO use collect?
     relativizePathString(pathAsString)
   }
