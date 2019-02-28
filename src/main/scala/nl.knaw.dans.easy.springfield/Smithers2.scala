@@ -191,7 +191,7 @@ trait Smithers2 {
   }
 
   private def relativizePathString(path: String): String = {
-    if (!path.isEmpty && path.startsWith("/") && path.length >= 2) path.substring(1)
+    if (path.startsWith("/") && path.length >= 2) path.substring(1)
     else path
   }
 
