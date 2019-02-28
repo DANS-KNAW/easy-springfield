@@ -18,11 +18,13 @@ package nl.knaw.dans.easy.springfield
 import java.nio.file.{ Path, Paths }
 
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, singleArgConverter, listArgConverter }
+import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, listArgConverter, singleArgConverter }
 
 class CommandLineOptions(args: Array[String], properties: PropertiesConfiguration, version: String) extends ScallopConf(args) {
   appendDefaultToDescription = true
   editBuilder(_.setHelpWidth(110))
+
+  //private val configuration = Configuration(File(System.getProperty("app.home")))
 
   printedName = "easy-springfield"
   private val SUBCOMMAND_SEPARATOR = "---\n"
@@ -291,12 +293,12 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
       descr = "the ISO 639-1 (two letter) language code")
     val presentation: ScallopOption[Path] = trailArg(name = "presentation",
       descr = "referid of the presentation")
-    val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)", // TODO: change to List[Path] ? We shall need a valueconverter then, however.
+    val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)",
       descr = "path to the WebVTT subtitles file(s) to add")
+  //  validate(languageCode)(lc => if (!configuration.isValidLanguageCode(lc)) Left(s"$lc is currently not an ISO639-1 supported language code") else Right(lc))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(addSubtitlesToPresentation)
-  footer("")
 
   val showAvailableLanguageCodes = new Subcommand("show-available-language-codes") {
     descr(
@@ -306,5 +308,5 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(showAvailableLanguageCodes)
-
+  footer("")
 }

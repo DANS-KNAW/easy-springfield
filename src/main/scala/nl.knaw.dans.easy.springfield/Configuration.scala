@@ -15,33 +15,17 @@
  */
 package nl.knaw.dans.easy.springfield
 
+import _root_.resource.managed
 import better.files.File
 import better.files.File._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 
-import scala.collection.JavaConverters._
+import scala.io.Source
 
-case class Configuration(version: String, properties: PropertiesConfiguration, languages: PropertiesConfiguration) {
-  def isAValidLanguageCode(code: String): Boolean = {
-    Option(languages.getString(code)).isDefined
-  }
+case class Configuration(version: String, val properties: PropertiesConfiguration, val languages: List[String]) {
+  def isValidLanguageCode(code: String): Boolean = languages.contains(code)
 
-  def getCountryNameForCode(code: String): Option[String] = {
-    Option(languages.getString(code))
-  }
-
-  def getSupportedCodes: List[String] = {
-    languages
-      .getKeys
-      .asScala
-      .toList
-  }
-
-  def getSupportedCodesWithName: Map[String, String] = {
-    getSupportedCodes.flatMap(key => Map(key -> languages.getString(key)))
-      .toMap
-  }
 }
 
 object Configuration extends DebugEnhancedLogging {
@@ -62,10 +46,6 @@ object Configuration extends DebugEnhancedLogging {
         setDelimiterParsingDisabled(true)
         load((cfgPath / "application.properties").toJava)
       },
-      languages = new PropertiesConfiguration() {
-        setDelimiterParsingDisabled(true)
-        load((cfgPath / "iso-639-1.properties").toJava)
-      }
-    )
+      languages = managed(Source.fromFile((cfgPath / "iso-639-1.properties").toJava)).acquireAndGet(_.getLines().toList))
   }
 }

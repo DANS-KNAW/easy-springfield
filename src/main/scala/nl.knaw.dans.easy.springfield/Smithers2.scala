@@ -27,7 +27,7 @@ import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Elem, XML }
 
 trait Smithers2 {
-  this: DebugEnhancedLogging with FileComponent =>
+  this: DebugEnhancedLogging =>
   val smithers2BaseUri: URI
   val smithers2ConnectionTimeoutMs: Int
   val smithers2ReadTimoutMs: Int
@@ -177,18 +177,15 @@ trait Smithers2 {
   }
 
   def getVideoRefIdForVideoInPresentation(presentation: Path, id: String): Try[String] = {
-    val uri = path2Uri(presentation)
-    for {
-      responseBody <- http("GET", uri).map(response => response.body)
-      videoRef = extractVideoRefFromPresentationForVideoId(id, responseBody)
-    } yield videoRef
+    getXmlFromPath(presentation)
+      .flatMap(extractVideoRefFromPresentationForVideoId(id))
   }
 
-  //TODO this code can probably be improved
-  private def extractVideoRefFromPresentationForVideoId(id: String, responseBody: Array[Byte]): String = {
-    val pathAsString = ((XML.loadString(responseBody.map(_.toChar).mkString("")) \\ "video")
-      .filter(node => (node \\ "@id").text == id) \\ "@referid").text //TODO use collect?
-    relativizePathString(pathAsString)
+  private def extractVideoRefFromPresentationForVideoId(index: String)(presentationXml: Elem): Try[String] = Try {
+    (presentationXml \\ "video")
+      .collectFirst { case node if (node \ "@id").text == index => (node \\ "@referid").text }
+      .map(relativizePathString)
+      .getOrElse(throw new IllegalStateException(s"No videoReference found for index '$index' in the presentation"))
   }
 
   private def relativizePathString(path: String): String = {

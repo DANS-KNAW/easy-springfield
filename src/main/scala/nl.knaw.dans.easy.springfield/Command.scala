@@ -22,7 +22,6 @@ import better.files.File
 import nl.knaw.dans.easy.springfield.AvType._
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-import org.rogach.scallop.ScallopOption
 
 import scala.io.StdIn
 import scala.util.{ Failure, Success, Try }
@@ -32,7 +31,7 @@ object Command extends App
   with DebugEnhancedLogging
   with EasySpringfieldApp
   with Smithers2
-  with FileComponent
+  with AddSubtitles
   with ListUsers
   with ListCollections
   with GetStatus
@@ -46,8 +45,7 @@ object Command extends App
 
   private val avNames = Set("audio", "video")
   private val configuration = Configuration(File(System.getProperty("app.home")))
-  private val opts = new CommandLineOptions(args, properties, configuration.version)
-  private val springFieldBaseDir = Paths.get(properties.getString("springfield.base-dir", "/data/dansstreaming"))
+  private val opts = new CommandLineOptions(args, configuration.properties, configuration.version)
   opts.verify()
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
@@ -144,23 +142,23 @@ object Command extends App
         _ <- checkPathIsRelative(cmd.presentation())
         _ <- addPresentationRefToCollection(getCompletePath(cmd.presentation()), cmd.name(), cmd.collection())
       } yield "Presentation reference added."
-    case Some(cmd @ opts.`addSubtitlesToVideo`) =>
+    case Some(cmd @ opts.addSubtitlesToVideo) =>
       for {
         _ <- checkPathIsRelative(cmd.video())
-        language <- validateThatLanguageCodeIsValid(cmd.languageCode)
+        language <- validateThatLanguageCodeIsValid(cmd.languageCode())
         videoRefId = getCompletePath(cmd.video())
         _ <- addSubtitlesToVideo(cmd.subtitles(), videoRefId, language)
       } yield "Subtitles added to video."
-    case Some(cmd @ opts.`addSubtitlesToPresentation`) =>
+    case Some(cmd @ opts.addSubtitlesToPresentation) =>
       for {
-        language <- validateThatLanguageCodeIsValid(cmd.languageCode)
+        language <- validateThatLanguageCodeIsValid(cmd.languageCode())
         _ <- checkPathIsRelative(cmd.presentation())
         completePath = getCompletePath(cmd.presentation())
         _ <- checkPresentation(completePath)
         _ <- addSubtitlesToPresentation(1, language, completePath, cmd.subtitles())
       } yield "Subtitles added to presentation"
-    case Some(cmd @ opts.`showAvailableLanguageCodes`) =>
-      println(configuration.getSupportedCodesWithName.mkString("\n"))
+    case Some(cmd @ opts.showAvailableLanguageCodes) =>
+      println(configuration.languages.mkString("\n"))
       Success("Finished printing supported language codes.")
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
@@ -168,52 +166,12 @@ object Command extends App
   result.map(msg => Console.err.println(s"OK: $msg"))
     .doIfFailure { case e => Console.err.println(s"FAILED: ${ e.getMessage }") }
 
-  private def addSubtitlesToVideo(subtitles: Path, videoRefId: Path, language: String): Try[Unit] = {
-    for {
-      _ <- checkVideoReferId(videoRefId)
-      adjustedFileName = createLanguageAdjustedFileName(subtitles, language)
-      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName, springFieldBaseDir)
-      _ <- putSubtitlesToVideo(videoRefId, language, adjustedFileName)
-    } yield ()
-  }
-
-  /**
-   * Adds a list of subtitles to a presentation, recursive function loops over the list of subtitles with an index
-   *
-   * @param videoNumber  the index of the video for the to be added subtitles
-   * @param language     the language of the subtitles
-   * @param presentation the path towards the presentation
-   * @param subtitles    a list of paths to the to be added subtitles files
-   * @return
-   */
-  def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[Path]): Try[Unit] = {
-    subtitles match {
-      case Nil => Success(())
-      case head :: tail =>
-        val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
-        val pathToPresentation = presentation.resolve(relativePathToVideoProps)
-        for {
-          _ <- checkPresentation(presentation)
-          videoRef <- getVideoRefIdForVideoInPresentation(presentation, String.valueOf(videoNumber))
-          languageAdjustedFileName = createLanguageAdjustedFileName(head, language)
-          _ <- addSubtitlesToVideo(head, Paths.get(videoRef), language) // first add the subtitles to the video, before adding it to the presentation
-          _ <- putSubtitlesToPresentation(pathToPresentation, language, languageAdjustedFileName)
-          _ = debug(s"added '$head' to presentation '$pathToPresentation'")
-          _ <- addSubtitlesToPresentation(videoNumber + 1, language, presentation, tail)
-        } yield ()
-    }
-  }
-
-  private def validateThatLanguageCodeIsValid(languageOpt: ScallopOption[String]): Try[String] = Try {
-    val languageCode = languageOpt
-      .toOption
-      .getOrElse(throw new IllegalArgumentException("Mandatory option --language <language> was not given"))
-    if (!configuration.isAValidLanguageCode(languageCode)) {
+  private def validateThatLanguageCodeIsValid(languageCode: String): Try[String] = Try {
+    if (!configuration.isValidLanguageCode(languageCode))
       throw new IllegalArgumentException(
         s"""The provided language code '$languageCode' is currently not supported by the ISO-639-1 standard.
            | For a list of supported languages type: easy-springfield show-available-language-codes""".stripMargin)
-    }
-    languageCode
+    else languageCode
   }
 
   private def checkPathIsRelative(path: Path): Try[Unit] =
