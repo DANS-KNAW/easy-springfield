@@ -306,5 +306,4 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(showAvailableLanguageCodes)
-
 }
