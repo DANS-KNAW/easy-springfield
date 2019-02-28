@@ -184,9 +184,10 @@ trait Smithers2 {
     } yield videoRef
   }
 
+  //TODO this code can probably be improved
   private def extractVideoRefFromPresentationForVideoId(id: String, responseBody: Array[Byte]): String = {
     val pathAsString = ((XML.loadString(responseBody.map(_.toChar).mkString("")) \\ "video")
-      .filter(node => (node \\ "@id").text == id) \\ "@referid").text
+      .filter(node => (node \\ "@id").text == id) \\ "@referid").text //TODO use collect?
     relativizePathString(pathAsString)
   }
 
