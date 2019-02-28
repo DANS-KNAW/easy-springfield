@@ -179,7 +179,7 @@ trait Smithers2 {
   def getVideoRefIdForVideoInPresentation(presentation: Path, id: String): Try[String] = {
     val uri = path2Uri(presentation)
     for {
-      responseBody <- http("GET", uri).map(response => response.body)
+      responseBody <- http("GET", uri).map(_.body)
       videoRef = extractVideoRefFromPresentationForVideoId(id, responseBody)
     } yield videoRef
   }
