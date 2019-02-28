@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.springfield
 import java.nio.file.{ Path, Paths }
 
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, singleArgConverter }
+import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, singleArgConverter, listArgConverter }
 
 class CommandLineOptions(args: Array[String], properties: PropertiesConfiguration, version: String) extends ScallopConf(args) {
   appendDefaultToDescription = true
@@ -49,6 +49,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
        |$printedName add-presentationref-to-collection <presentation> <name> <collection>
        |$printedName add-subtitles-to-video --language <code> <video> <web-vtt-file>
        |$printedName add-subtitles-to-presentation --language <code> <presentation> <web-vtt-file>...
+       |$printedName show-available-language-codes
      """.stripMargin
 
   version(s"$printedName v$version")
@@ -66,6 +67,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
        |""".stripMargin)
 
   private implicit val fileConverter = singleArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
+  private implicit val pathsConverter = listArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
 
   private def resolveTildeToHomeDir(s: String): String =
     if (s.startsWith("~")) s.replaceFirst("~", System.getProperty("user.home"))
@@ -289,10 +291,20 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
       descr = "the ISO 639-1 (two letter) language code")
     val presentation: ScallopOption[Path] = trailArg(name = "presentation",
       descr = "referid of the presentation")
-    val subtitles: ScallopOption[List[String]] = trailArg(name = "webvtt-file(s)", // TODO: change to List[Path] ? We shall need a valueconverter then, however.
+    val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)", // TODO: change to List[Path] ? We shall need a valueconverter then, however.
       descr = "path to the WebVTT subtitles file(s) to add")
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(addSubtitlesToPresentation)
   footer("")
+
+  val showAvailableLanguageCodes = new Subcommand("show-available-language-codes") {
+    descr(
+      """
+        | Prints a list of all language codes that are currently supported by the ISO639-1 standard
+      """.stripMargin)
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(showAvailableLanguageCodes)
+
 }

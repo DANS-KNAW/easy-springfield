@@ -46,7 +46,6 @@ object Command extends App
 
   private val avNames = Set("audio", "video")
   private val configuration = Configuration(File(System.getProperty("app.home")))
-  private val iso639: ISO639 = ISO639(File(System.getProperty("app.home")))
   private val opts = new CommandLineOptions(args, properties, configuration.version)
   private val springFieldBaseDir = Paths.get(properties.getString("springfield.base-dir", "/data/dansstreaming"))
   opts.verify()
@@ -152,7 +151,7 @@ object Command extends App
         videoRefId = getCompletePath(cmd.video())
         _ <- addSubtitlesToVideo(cmd.subtitles(), videoRefId, language)
       } yield "Subtitles added to video."
-    case Some(cmd @ opts.addSubtitlesToPresentation) =>
+    case Some(cmd @ opts.`addSubtitlesToPresentation`) =>
       for {
         language <- validateThatLanguageCodeIsValid(cmd.languageCode)
         _ <- checkPathIsRelative(cmd.presentation())
@@ -160,6 +159,9 @@ object Command extends App
         _ <- checkPresentation(completePath)
         _ <- addSubtitlesToPresentation(1, language, completePath, cmd.subtitles())
       } yield "Subtitles added to presentation"
+    case Some(cmd @ opts.`showAvailableLanguageCodes`) =>
+      println(configuration.getSupportedCodesWithName.mkString("\n"))
+      Success("Finished printing supported language codes.")
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
 
@@ -176,28 +178,29 @@ object Command extends App
   }
 
   /**
-   * Adds a list of subtitles to a presentation, recursive function
+   * Adds a list of subtitles to a presentation, recursive function loops over the list of subtitles with an index
    *
-   * @param videoNumber
+   * @param videoNumber  the index of the video for the to be added subtitles
    * @param language     the language of the subtitles
    * @param presentation the path towards the presentation
+   * @param subtitles    a list of paths to the to be added subtitles files
    * @return
    */
-  def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[String]): Try[Unit] = {
-    if (subtitles.isEmpty) Success(())
-    else {
-      val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
-      val pathToPresentation = presentation.resolve(relativePathToVideoProps)
-      debug(s"absolutePath to video in presentation PATH: $pathToPresentation")
-      for {
-        _ <- checkPresentation(presentation)
-        videoRef <- getVideoRefIdForVideoInPresentation(presentation, String.valueOf(videoNumber))
-        languageAdjustedFileName = createLanguageAdjustedFileName(Paths.get(subtitles.head), language)
-        _ <- addSubtitlesToVideo(Paths.get(subtitles.head), Paths.get(videoRef), language)
-        _ <- putSubtitlesToPresentation(pathToPresentation, language, languageAdjustedFileName)
-        _ = println(s"added '${ Paths.get(subtitles.head) }' to presentation '$pathToPresentation'")
-        _ <- addSubtitlesToPresentation(videoNumber + 1, language, presentation, subtitles.tail)
-      } yield ()
+  def addSubtitlesToPresentation(videoNumber: Int, language: String, presentation: Path, subtitles: List[Path]): Try[Unit] = {
+    subtitles match {
+      case Nil => Success(())
+      case head :: tail =>
+        val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
+        val pathToPresentation = presentation.resolve(relativePathToVideoProps)
+        for {
+          _ <- checkPresentation(presentation)
+          videoRef <- getVideoRefIdForVideoInPresentation(presentation, String.valueOf(videoNumber))
+          languageAdjustedFileName = createLanguageAdjustedFileName(head, language)
+          _ <- addSubtitlesToVideo(head, Paths.get(videoRef), language) // first add the subtitles to the video, before adding it to the presentation
+          _ <- putSubtitlesToPresentation(pathToPresentation, language, languageAdjustedFileName)
+          _ = debug(s"added '$head' to presentation '$pathToPresentation'")
+          _ <- addSubtitlesToPresentation(videoNumber + 1, language, presentation, tail)
+        } yield ()
     }
   }
 
@@ -205,8 +208,10 @@ object Command extends App
     val languageCode = languageOpt
       .toOption
       .getOrElse(throw new IllegalArgumentException("Mandatory option --language <language> was not given"))
-    if (!iso639.isAValidLanguageCode(languageCode)) {
-      throw new IllegalArgumentException(s"The provided language code '$languageCode' is currently not supported by the ISO-639-1 standard.\nSupported language codes are:\n ${ iso639.getSupportedCodes.mkString("\n") }")
+    if (!configuration.isAValidLanguageCode(languageCode)) {
+      throw new IllegalArgumentException(
+        s"""The provided language code '$languageCode' is currently not supported by the ISO-639-1 standard.
+           | For a list of supported languages type: easy-springfield show-available-language-codes""".stripMargin)
     }
     languageCode
   }

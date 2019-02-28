@@ -17,15 +17,16 @@ package nl.knaw.dans.easy.springfield
 
 import java.nio.file.Path
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.io.FileUtils
 
 import scala.util.Try
 
-trait FileComponent {
+trait FileComponent extends DebugEnhancedLogging {
 
   def moveSubtitlesToDir(relativeDestination: Path, subtitles: Path, adjustedFileName: String, springFieldBaseDir: Path): Try[Unit] = Try {
-    val resolvedDestination = springFieldBaseDir.resolve(relativeDestination) //TODO make configurable?
-    println(s"copying sub titles '${ subtitles.getFileName }' to destination '${ resolvedDestination.resolve(adjustedFileName) }'")
+    val resolvedDestination = springFieldBaseDir.resolve(relativeDestination)
+    debug(s"copying sub titles '${ subtitles.getFileName }' to destination '${ resolvedDestination.resolve(adjustedFileName) }'")
     FileUtils.copyFile(subtitles.toFile, resolvedDestination.resolve(adjustedFileName).toFile)
   }
 

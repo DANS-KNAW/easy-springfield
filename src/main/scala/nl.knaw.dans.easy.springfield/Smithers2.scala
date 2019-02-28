@@ -180,13 +180,19 @@ trait Smithers2 {
     val uri = path2Uri(presentation)
     for {
       responseBody <- http("GET", uri).map(response => response.body)
-         videoRef = extractVideoRefFromPresentationForVideoId(id, responseBody) //remove /
+      videoRef = extractVideoRefFromPresentationForVideoId(id, responseBody)
     } yield videoRef
   }
 
   private def extractVideoRefFromPresentationForVideoId(id: String, responseBody: Array[Byte]): String = {
-    ((XML.loadString(responseBody.map(_.toChar).mkString("")) \\ "video")
-      .filter(node => (node \\ "@id").text == id) \\ "@referid").text.substring(1)
+    val pathAsString = ((XML.loadString(responseBody.map(_.toChar).mkString("")) \\ "video")
+      .filter(node => (node \\ "@id").text == id) \\ "@referid").text
+    relativizePathString(pathAsString)
+  }
+
+  private def relativizePathString(path: String): String = {
+    if (!path.isEmpty && path.startsWith("/") && path.length >= 2) path.substring(1)
+    else path
   }
 
   def putSubtitlesToPresentation(videoRefInPresentation: Path, languageCode: String, fileName: String): Try[Elem] = {
