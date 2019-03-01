@@ -41,7 +41,7 @@ object Configuration extends DebugEnhancedLogging {
         setDelimiterParsingDisabled(true)
         load((cfgPath / "application.properties").toJava)
       },
-      File(cfgPath.toJava.toPath)
+      (File(cfgPath.toJava.toPath) / "iso-639-1.txt")
         .lines
         .toList)
   }

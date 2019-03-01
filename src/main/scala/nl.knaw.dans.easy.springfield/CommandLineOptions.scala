@@ -274,7 +274,8 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
       descr = "the ISO 639-1 (two letter) language code",
       required = true)
     val video: ScallopOption[Path] = trailArg(name = "video",
-      descr = "the referid of the video")
+      descr = "the referid of the video",
+      required = true)
     val subtitles: ScallopOption[Path] = trailArg(name = "webvtt-file",
       descr = "path to the WebVTT subtitles file to add",
       required = true)
@@ -291,11 +292,14 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
         | the same number of WebVTT files must be specified; they will be added in the specified order to the respective videos.
       """.stripMargin)
     val languageCode: ScallopOption[String] = opt(name = "language",
-      descr = "the ISO 639-1 (two letter) language code")
+      descr = "the ISO 639-1 (two letter) language code",
+      required = true)
     val presentation: ScallopOption[Path] = trailArg(name = "presentation",
-      descr = "referid of the presentation")
+      descr = "referid of the presentation",
+      required = true)
     val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)",
-      descr = "path to the WebVTT subtitles file(s) to add")
+      descr = "path to the WebVTT subtitles file(s) to add",
+      required = true)
     validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(lc)
                                  else Left(s"$lc is not an ISO639-1 supported language code"))
     footer(SUBCOMMAND_SEPARATOR)
