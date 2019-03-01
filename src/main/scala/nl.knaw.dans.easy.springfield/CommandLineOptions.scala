@@ -295,7 +295,8 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
       descr = "referid of the presentation")
     val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)",
       descr = "path to the WebVTT subtitles file(s) to add")
-  //  validate(languageCode)(lc => if (!configuration.isValidLanguageCode(lc)) Left(s"$lc is currently not an ISO639-1 supported language code") else Right(lc))
+    validate(languageCode)(lc => if (configuration.isValidLanguageCode(lc)) Right(lc)
+                                 else Left(s"$lc is not an ISO639-1 supported language code"))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(addSubtitlesToPresentation)
