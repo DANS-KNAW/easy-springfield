@@ -38,7 +38,7 @@ trait AddSubtitles extends DebugEnhancedLogging {
 
   /**
    * This method copies a file containing subtitles to the desired video directory.
-   * It also updates the smithers2 XML through HTTP PUT call.
+   * It also updates the Smithers2 XML through HTTP PUT call.
    *
    * @param subtitles  the path to a file containing the subtitles to be added to the video
    * @param videoRefId the path to the video where the subtitles will be added

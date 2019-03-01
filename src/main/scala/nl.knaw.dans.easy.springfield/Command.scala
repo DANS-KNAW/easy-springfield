@@ -18,7 +18,6 @@ package nl.knaw.dans.easy.springfield
 import java.nio.file.{ Path, Paths }
 import java.util.UUID
 
-import better.files.File
 import nl.knaw.dans.easy.springfield.AvType._
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -44,8 +43,7 @@ object Command extends App
   type FeedBackMessage = String
 
   private val avNames = Set("audio", "video")
-  private val configuration = Configuration(File(System.getProperty("app.home")))
-  private val opts = new CommandLineOptions(args, configuration.properties, configuration.languages, configuration.version)
+  private val opts = new CommandLineOptions(args, config.properties, config.languages, config.version)
   opts.verify()
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
@@ -156,7 +154,7 @@ object Command extends App
         _ <- addSubtitlesToPresentation(1, cmd.languageCode(), completePath, cmd.subtitles())
       } yield "Subtitles added to presentation"
     case Some(cmd @ opts.showAvailableLanguageCodes) =>
-      println(configuration.languages.mkString("\n"))
+      println(config.languages.mkString("\n"))
       Success("Finished printing supported language codes.")
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
   }
