@@ -280,7 +280,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
       descr = "path to the WebVTT subtitles file to add",
       required = true)
     validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(())
-                                 else Left(s"$lc is not an ISO639-1 supported language code")) //TODO compiler warning: a pure expression does nothing in statement position
+                                 else Left(s"$lc is not an ISO639-1 supported language code"))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(addSubtitlesToVideo)
