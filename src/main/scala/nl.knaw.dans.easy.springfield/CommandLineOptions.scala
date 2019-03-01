@@ -20,11 +20,10 @@ import java.nio.file.{ Path, Paths }
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, listArgConverter, singleArgConverter }
 
-class CommandLineOptions(args: Array[String], properties: PropertiesConfiguration, version: String) extends ScallopConf(args) {
+class CommandLineOptions(args: Array[String], properties: PropertiesConfiguration, languageCodes: List[String], version: String) extends ScallopConf(args) {
   appendDefaultToDescription = true
   editBuilder(_.setHelpWidth(110))
 
-  //private val configuration = Configuration(File(System.getProperty("app.home")))
 
   printedName = "easy-springfield"
   private val SUBCOMMAND_SEPARATOR = "---\n"
@@ -279,6 +278,8 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val subtitles: ScallopOption[Path] = trailArg(name = "webvtt-file",
       descr = "path to the WebVTT subtitles file to add",
       required = true)
+    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(lc)
+                                 else Left(s"$lc is not an ISO639-1 supported language code")) //TODO compiler warning: a pure expression does nothing in statement position
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(addSubtitlesToVideo)
@@ -295,7 +296,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
       descr = "referid of the presentation")
     val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)",
       descr = "path to the WebVTT subtitles file(s) to add")
-    validate(languageCode)(lc => if (configuration.isValidLanguageCode(lc)) Right(lc)
+    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(lc)
                                  else Left(s"$lc is not an ISO639-1 supported language code"))
     footer(SUBCOMMAND_SEPARATOR)
   }

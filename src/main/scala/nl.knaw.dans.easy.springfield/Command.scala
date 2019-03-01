@@ -45,7 +45,7 @@ object Command extends App
 
   private val avNames = Set("audio", "video")
   private val configuration = Configuration(File(System.getProperty("app.home")))
-  private val opts = new CommandLineOptions(args, configuration.properties, configuration.version)
+  private val opts = new CommandLineOptions(args, configuration.properties, configuration.languages, configuration.version)
   opts.verify()
 
   val result: Try[FeedBackMessage] = opts.subcommand match {

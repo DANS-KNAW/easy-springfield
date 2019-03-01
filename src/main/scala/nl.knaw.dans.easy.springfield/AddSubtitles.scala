@@ -22,8 +22,8 @@ import org.apache.commons.io.FileUtils
 
 import scala.util.{ Success, Try }
 
-trait AddSubtitles extends Smithers2
-  with DebugEnhancedLogging {
+trait AddSubtitles extends DebugEnhancedLogging {
+  this: Smithers2 =>
   val springFieldBaseDir: Path
 
   def moveSubtitlesToDir(relativeDestination: Path, subtitles: Path, adjustedFileName: String, springFieldBaseDir: Path): Try[Unit] = Try {

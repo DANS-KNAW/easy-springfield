@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.springfield
 
 import java.net.URI
-import java.nio.file.Paths
+import java.nio.file.{ Path, Paths }
 
 import better.files.File
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -36,5 +36,5 @@ trait EasySpringfieldApp {
   val lennyReadTimeoutMs: Int = config.properties.getInt("springfield.lenny.read-timeout-ms")
 
   val defaultDomain: String = config.properties.getString("springfield.default-domain")
-  val springFieldBaseDir = Paths.get(config.properties.getString("springfield.base-dir"))
+  val springFieldBaseDir: Path = Paths.get(config.properties.getString("springfield.base-dir"))
 }

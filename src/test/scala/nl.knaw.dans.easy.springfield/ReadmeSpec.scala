@@ -28,7 +28,7 @@ class ReadmeSpec extends FlatSpec with Matchers with CustomMatchers {
     load(Paths.get("src/main/assembly/dist/cfg", "application.properties").toFile)
   }
 
-  private val clo = new CommandLineOptions(Array[String](), mockedConfigurationProperties, "version x.y.z") {
+  private val clo = new CommandLineOptions(Array[String](), mockedConfigurationProperties, List(),"version x.y.z") {
     //avoids System.exit() in case of invalid arguments or "--help"
     override def verify(): Unit = {}
   }

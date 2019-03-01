@@ -15,18 +15,14 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import _root_.resource.managed
 import better.files.File
 import better.files.File._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 
-import scala.io.Source
-
-case class Configuration(version: String, val properties: PropertiesConfiguration, val languages: List[String]) {
+case class Configuration(version: String, properties: PropertiesConfiguration, languages: List[String]) {
   def isValidLanguageCode(code: String): Boolean = languages.contains(code)
 }
-
 object Configuration extends DebugEnhancedLogging {
 
   def apply(home: File): Configuration = {
@@ -45,6 +41,8 @@ object Configuration extends DebugEnhancedLogging {
         setDelimiterParsingDisabled(true)
         load((cfgPath / "application.properties").toJava)
       },
-      languages = managed(Source.fromFile((cfgPath / "iso-639-1.properties").toJava)).acquireAndGet(_.getLines().toList))
+      File(cfgPath.toJava.toPath)
+        .lines
+        .toList)
   }
 }

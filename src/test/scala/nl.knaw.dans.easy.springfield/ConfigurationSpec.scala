@@ -15,10 +15,8 @@
  */
 package nl.knaw.dans.easy.springfield
 
+import better.files.File
 import org.apache.commons.configuration.PropertiesConfiguration
-import resource.managed
-
-import scala.io.Source
 
 class ConfigurationSpec extends TestSupportFixture with CustomMatchers {
 
@@ -41,6 +39,8 @@ class ConfigurationSpec extends TestSupportFixture with CustomMatchers {
   }
 
   private def createConfig: Configuration = {
-    Configuration("1.0", new PropertiesConfiguration(), managed(Source.fromFile("src/test/resources/debug-config/iso-639-1.properties")).acquireAndGet(_.getLines().toList))
+    Configuration("1.0", new PropertiesConfiguration(), File("src/test/resources/debug-config/iso-639-1.txt")
+      .lines
+      .toList)
   }
 }
