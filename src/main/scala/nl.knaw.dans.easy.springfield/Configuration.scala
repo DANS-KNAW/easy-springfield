@@ -25,7 +25,6 @@ import scala.io.Source
 
 case class Configuration(version: String, val properties: PropertiesConfiguration, val languages: List[String]) {
   def isValidLanguageCode(code: String): Boolean = languages.contains(code)
-
 }
 
 object Configuration extends DebugEnhancedLogging {
