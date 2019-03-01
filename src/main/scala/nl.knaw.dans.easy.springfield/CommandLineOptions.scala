@@ -24,7 +24,6 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
   appendDefaultToDescription = true
   editBuilder(_.setHelpWidth(110))
 
-
   printedName = "easy-springfield"
   private val SUBCOMMAND_SEPARATOR = "---\n"
   private val FIVE_MINUTES = 60 * 5
