@@ -145,17 +145,15 @@ object Command extends App
     case Some(cmd @ opts.addSubtitlesToVideo) =>
       for {
         _ <- checkPathIsRelative(cmd.video())
-        language <- validateThatLanguageCodeIsValid(cmd.languageCode())
         videoRefId = getCompletePath(cmd.video())
-        _ <- addSubtitlesToVideo(cmd.subtitles(), videoRefId, language)
+        _ <- addSubtitlesToVideo(cmd.subtitles(), videoRefId, cmd.languageCode())
       } yield "Subtitles added to video."
     case Some(cmd @ opts.addSubtitlesToPresentation) =>
       for {
-        language <- validateThatLanguageCodeIsValid(cmd.languageCode())
         _ <- checkPathIsRelative(cmd.presentation())
         completePath = getCompletePath(cmd.presentation())
         _ <- checkPresentation(completePath)
-        _ <- addSubtitlesToPresentation(1, language, completePath, cmd.subtitles())
+        _ <- addSubtitlesToPresentation(1, cmd.languageCode(), completePath, cmd.subtitles())
       } yield "Subtitles added to presentation"
     case Some(cmd @ opts.showAvailableLanguageCodes) =>
       println(configuration.languages.mkString("\n"))
@@ -165,14 +163,6 @@ object Command extends App
 
   result.map(msg => Console.err.println(s"OK: $msg"))
     .doIfFailure { case e => Console.err.println(s"FAILED: ${ e.getMessage }") }
-
-  private def validateThatLanguageCodeIsValid(languageCode: String): Try[String] = Try {
-    if (!configuration.isValidLanguageCode(languageCode))
-      throw new IllegalArgumentException(
-        s"""The provided language code '$languageCode' is currently not supported by the ISO-639-1 standard.
-           | For a list of supported languages type: easy-springfield show-available-language-codes""".stripMargin)
-    else languageCode
-  }
 
   private def checkPathIsRelative(path: Path): Try[Unit] =
     Try { require(!path.isAbsolute, "Path MUST NOT start with a slash") }
