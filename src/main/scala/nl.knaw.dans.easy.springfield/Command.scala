@@ -43,7 +43,7 @@ object Command extends App
   type FeedBackMessage = String
 
   private val avNames = Set("audio", "video")
-  private val opts = new CommandLineOptions(args, config.properties, config.languages, config.version)
+  private val opts = new CommandLineOptions(args, config)
   opts.verify()
 
   val result: Try[FeedBackMessage] = opts.subcommand match {

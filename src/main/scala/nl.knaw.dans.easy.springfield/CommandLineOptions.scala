@@ -17,10 +17,10 @@ package nl.knaw.dans.easy.springfield
 
 import java.nio.file.{ Path, Paths }
 
-import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, listArgConverter, singleArgConverter }
 
-class CommandLineOptions(args: Array[String], properties: PropertiesConfiguration, languageCodes: List[String], version: String) extends ScallopConf(args) {
+class CommandLineOptions(args: Array[String], config: Configuration) extends ScallopConf(args) {
+
   appendDefaultToDescription = true
   editBuilder(_.setHelpWidth(110))
 
@@ -52,7 +52,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
        |$printedName show-available-language-codes
      """.stripMargin
 
-  version(s"$printedName v$version")
+  version(s"$printedName v$config.version")
 
   banner(
     s"""
@@ -78,7 +78,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val domain: ScallopOption[String] = trailArg(name = "domain",
       descr = "the domain of which to list the users",
       required = false,
-      default = Some(properties.getString("springfield.default-domain")))
+      default = Some(config.properties.getString("springfield.default-domain")))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(listUsers)
@@ -91,7 +91,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val domain: ScallopOption[String] = trailArg(name = "domain",
       descr = "the domain containing the user",
       required = false,
-      default = Some(properties.getString("springfield.default-domain")))
+      default = Some(config.properties.getString("springfield.default-domain")))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(listCollections)
@@ -107,7 +107,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val domain: ScallopOption[String] = trailArg(name = "domain",
       descr = "the target domain in which to create the user",
       required = false,
-      default = Some(properties.getString("springfield.default-domain")))
+      default = Some(config.properties.getString("springfield.default-domain")))
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(createUser)
@@ -126,7 +126,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val domain: ScallopOption[String] = trailArg(name = "domain",
       descr = "the target domain in which to create the collection",
       required = false,
-      default = Some(properties.getString("springfield.default-domain")))
+      default = Some(config.properties.getString("springfield.default-domain")))
     val title: ScallopOption[String] = opt(name = "title", short = 't',
       descr = "Title for the new collection",
       default = Some(""))
@@ -147,7 +147,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val domain: ScallopOption[String] = trailArg(name = "domain",
       descr = "the target domain in which to create the presentation",
       required = false,
-      default = Some(properties.getString("springfield.default-domain")))
+      default = Some(config.properties.getString("springfield.default-domain")))
     val title: ScallopOption[String] = opt(name = "title", short = 't',
       descr = "title for the new presentation",
       default = Some(""))
@@ -278,7 +278,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val subtitles: ScallopOption[Path] = trailArg(name = "webvtt-file",
       descr = "path to the WebVTT subtitles file to add",
       required = true)
-    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(())
+    validate(languageCode)(lc => if (config.languages.contains(lc)) Right(())
                                  else Left(s"$lc is not an ISO639-1 supported language code"))
     footer(SUBCOMMAND_SEPARATOR)
   }
@@ -299,7 +299,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)",
       descr = "path to the WebVTT subtitles file(s) to add",
       required = true)
-    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(())
+    validate(languageCode)(lc => if (config.languages.contains(lc)) Right(())
                                  else Left(s"$lc is not an ISO639-1 supported language code"))
     footer(SUBCOMMAND_SEPARATOR)
   }
