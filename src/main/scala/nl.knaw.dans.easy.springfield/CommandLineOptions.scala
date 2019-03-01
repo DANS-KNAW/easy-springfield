@@ -279,7 +279,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val subtitles: ScallopOption[Path] = trailArg(name = "webvtt-file",
       descr = "path to the WebVTT subtitles file to add",
       required = true)
-    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(lc)
+    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(())
                                  else Left(s"$lc is not an ISO639-1 supported language code")) //TODO compiler warning: a pure expression does nothing in statement position
     footer(SUBCOMMAND_SEPARATOR)
   }
@@ -300,7 +300,7 @@ class CommandLineOptions(args: Array[String], properties: PropertiesConfiguratio
     val subtitles: ScallopOption[List[Path]] = trailArg(name = "webvtt-file(s)",
       descr = "path to the WebVTT subtitles file(s) to add",
       required = true)
-    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(lc)
+    validate(languageCode)(lc => if (languageCodes.contains(lc)) Right(())
                                  else Left(s"$lc is not an ISO639-1 supported language code"))
     footer(SUBCOMMAND_SEPARATOR)
   }
