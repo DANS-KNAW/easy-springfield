@@ -36,5 +36,5 @@ trait EasySpringfieldApp {
   val lennyReadTimeoutMs: Int = config.properties.getInt("springfield.lenny.read-timeout-ms")
 
   val defaultDomain: String = config.properties.getString("springfield.default-domain")
-  val springFieldBaseDir: Path = Paths.get(config.properties.getString("springfield.base-dir"))
+  val springFieldDataDir: Path = Paths.get(config.properties.getString("springfield.data-dir"))
 }

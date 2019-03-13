@@ -21,13 +21,13 @@ import java.nio.file.{ Path, Paths }
 import org.scalatest._
 
 class AddSubtitlesSpec extends FlatSpec with Matchers with CustomMatchers with AddSubtitles with Smithers2 {
-  override val springFieldBaseDir: Path = Paths.get("/data/dansstreaming")
+  override val springFieldDataDir: Path = Paths.get("/data/dansstreaming")
   override val smithers2BaseUri: URI = new URI("http://localhost:8080/smithers2/")
   override val smithers2ConnectionTimeoutMs: Int = 100000
   override val smithers2ReadTimoutMs: Int = 100000
   override val defaultDomain: String = "dans"
 
-  "createLanguageAdjustedfileName" should "change a fileName called webvtt.vtt with language nl to nl_webvtt_nl.vtt" in {
+  "createLanguageAdjustedfileName" should "change a fileName called webvtt.vtt with language nl to nl_webvtt.vtt" in {
     createLanguageAdjustedFileName(Paths.get("/path/to/nowhere/webvtt.vtt"), "nl") shouldBe s"nl_webvtt.vtt"
   }
 

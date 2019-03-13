@@ -181,7 +181,7 @@ trait Smithers2 {
       .flatMap(extractVideoRefFromPresentationForVideoId(id))
   }
 
-  private def extractVideoRefFromPresentationForVideoId(index: String)(presentationXml: Elem): Try[String] = Try {
+  private[springfield] def extractVideoRefFromPresentationForVideoId(index: String)(presentationXml: Elem): Try[String] = Try {
     (presentationXml \\ "video")
       .collectFirst { case node if (node \ "@id").text == index => (node \\ "@referid").text }
       .map(relativizePathString)

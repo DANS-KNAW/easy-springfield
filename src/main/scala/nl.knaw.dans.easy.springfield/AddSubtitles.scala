@@ -24,9 +24,9 @@ import scala.util.{ Success, Try }
 
 trait AddSubtitles extends DebugEnhancedLogging {
   this: Smithers2 =>
-  val springFieldBaseDir: Path
+  val springFieldDataDir: Path
 
-  def moveSubtitlesToDir(relativeDestination: Path, subtitles: Path, adjustedFileName: String, springFieldBaseDir: Path): Try[Unit] = Try {
+  private def moveSubtitlesToDir(relativeDestination: Path, subtitles: Path, adjustedFileName: String, springFieldBaseDir: Path): Try[Unit] = Try {
     val resolvedDestination = springFieldBaseDir.resolve(relativeDestination)
     debug(s"copying sub titles '${ subtitles.getFileName }' to destination '${ resolvedDestination.resolve(adjustedFileName) }'")
     FileUtils.copyFile(subtitles.toFile, resolvedDestination.resolve(adjustedFileName).toFile)
@@ -49,7 +49,7 @@ trait AddSubtitles extends DebugEnhancedLogging {
     for {
       _ <- checkVideoReferId(videoRefId)
       adjustedFileName = createLanguageAdjustedFileName(subtitles, language)
-      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName, springFieldBaseDir)
+      _ <- moveSubtitlesToDir(videoRefId, subtitles, adjustedFileName, springFieldDataDir)
       _ <- putSubtitlesToVideo(videoRefId, language, adjustedFileName)
     } yield ()
   }
