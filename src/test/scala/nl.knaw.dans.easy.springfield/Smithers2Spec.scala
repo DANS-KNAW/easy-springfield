@@ -19,14 +19,11 @@ import java.net.URI
 import java.nio.file.Paths
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
-import org.scalatest._
 
 import scala.util.{ Failure, Random, Success }
 import scala.xml.Elem
 
-class Smithers2Spec extends FlatSpec
-  with Matchers
-  with CustomMatchers
+class Smithers2Spec extends TestSupportFixture
   with Smithers2
   with DebugEnhancedLogging {
   override val smithers2BaseUri: URI = new URI("http://localhost:8080/smithers2/")
@@ -64,7 +61,7 @@ class Smithers2Spec extends FlatSpec
   }
 
   it should "return the first video if two videos share the same reference id" in {
-    val elemDuplicateReference = <fsxml>
+    val elemDuplicateId = <fsxml>
         <presentation id="3">
           <videoplaylist id="1">
             <video id="1" referid="/domain/dans/user/utest/video/5">
@@ -74,11 +71,11 @@ class Smithers2Spec extends FlatSpec
           </videoplaylist>
         </presentation>
       </fsxml>
-    extractVideoRefFromPresentationForVideoId("1")(elemDuplicateReference) shouldBe Success("domain/dans/user/utest/video/5")
+    extractVideoRefFromPresentationForVideoId("1")(elemDuplicateId) shouldBe Success("domain/dans/user/utest/video/5")
   }
 
   "checkPresentation" should "succeed if the name path has more than 3 parts and presentation is the penultimate part" in {
-    checkPresentation(Paths.get("domain/dans/user/utest/presentation/1")) shouldBe Success(())
+    checkPresentation(Paths.get("domain/dans/user/utest/presentation/1")) shouldBe a[Success[_]]
   }
 
   it should "fail if the path has more than 3 parts and presentation is the last part" in {
@@ -96,7 +93,7 @@ class Smithers2Spec extends FlatSpec
   }
 
   it should "succeed if the path has more than 3 parts and presentation is the penultimate part, even though last part is not a number" in {
-    checkPresentation(Paths.get("domain/dans/user/utest/presentation/notANumber")) shouldBe Success(())
+    checkPresentation(Paths.get("domain/dans/user/utest/presentation/notANumber")) shouldBe a[Success[_]]
   }
 
   "checkVideoReferId" should "succeed if the path has more than 3 parts and video is the penultimate part" in {
@@ -118,11 +115,11 @@ class Smithers2Spec extends FlatSpec
   }
 
   it should "succeed if the path has more than 3 parts and video is the penultimate part, even though last part is not a number" in {
-    checkVideoReferId(Paths.get("domain/dans/user/utest/video/notANumber")) shouldBe Success(())
+    checkVideoReferId(Paths.get("domain/dans/user/utest/video/notANumber")) shouldBe a[Success[_]]
   }
 
   "checkCollection" should "succeed if the name path has more than 3 parts and collection is the penultimate part" in {
-    checkCollection(Paths.get("domain/dans/user/utest/collection/1")) shouldBe Success(())
+    checkCollection(Paths.get("domain/dans/user/utest/collection/1")) shouldBe a[Success[_]]
   }
 
   it should "fail if the path has more than 3 parts and collection is the last part" in {
@@ -140,18 +137,18 @@ class Smithers2Spec extends FlatSpec
   }
 
   it should "succeed if the path has more than 3 parts and collection is the penultimate part, even though last part is not a number" in {
-    checkCollection(Paths.get("domain/dans/user/utest/collection/notANumber")) shouldBe Success(())
+    checkCollection(Paths.get("domain/dans/user/utest/collection/notANumber")) shouldBe a[Success[_]]
   }
 
   "checkNameLenght" should "succeed if the name length is below 101" in {
-    checkNameLength("below 100") shouldBe Success(())
-    checkNameLength(Random.nextString(100)) shouldBe Success(())
+    checkNameLength("below MAX_NAME_LENGTH") shouldBe Success(())
+    checkNameLength(Random.nextString(MAX_NAME_LENGTH)) shouldBe Success(())
   }
 
   it should "fail if the name length is above 100" in {
-    val moreThan100Chars = Random.nextString(101)
-    checkNameLength(moreThan100Chars) should matchPattern {
-      case Failure(i: IllegalArgumentException) if i.getMessage == s"Name is longer than 100 chars: $moreThan100Chars" =>
+    val overMaxNameLenght = Random.nextString(MAX_NAME_LENGTH + 1)
+    checkNameLength(overMaxNameLenght) should matchPattern {
+      case Failure(i: IllegalArgumentException) if i.getMessage == s"Name is longer than $MAX_NAME_LENGTH chars: $overMaxNameLenght" =>
     }
   }
 

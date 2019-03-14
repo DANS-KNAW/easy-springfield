@@ -267,7 +267,7 @@ trait Smithers2 {
 
   def checkNameLength(name: String): Try[Unit] = {
     if (name.length <= MAX_NAME_LENGTH) Success(())
-    else Failure(new IllegalArgumentException(s"Name is longer than 100 chars: $name"))
+    else Failure(new IllegalArgumentException(s"Name is longer than $MAX_NAME_LENGTH chars: $name"))
   }
 
   def getCompletePath(path: Path): Path = {
