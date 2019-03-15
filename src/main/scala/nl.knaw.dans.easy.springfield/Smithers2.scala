@@ -250,13 +250,14 @@ trait Smithers2 {
     else Failure(new IllegalArgumentException(s"$presentation does not appear to be a presentation referid or Springfield path. Expected format: [domain/<d>/]user/<u>/presentation/<number> OR [domain/<d>/]user/<u>/collection/<c>/presentation/<p>"))
   }
 
-  private def isPresentationPath(presentation: Path): Boolean = presentation.getNameCount > 3 && presentation.getName(presentation.getNameCount - 2).toString == "presentation"
+  private def isPresentationPath(presentation: Path): Boolean = {
+    presentation.getNameCount > 3 && presentation.getName(presentation.getNameCount - 2).toString == "presentation"
+  }
 
   private def extractPresentationReferIdPath(presentation: Path, xml: Elem): Try[Path] = Try {
     (xml \\ "presentation").map(_ \\ "@referid")
       .map(node => Paths.get(node.text))
-      .collectFirst { case path: Path if isPresentationPath(path) => path }
-      .map(path => Paths.get(relativizePathString(path.toString)))
+      .collectFirst { case path: Path if isPresentationPath(path) => Paths.get(relativizePathString(path.toString)) }
       .getOrElse(throw new IllegalStateException(s"No presentation referid found for presentation name '${ presentation.getFileName }'"))
   }
 

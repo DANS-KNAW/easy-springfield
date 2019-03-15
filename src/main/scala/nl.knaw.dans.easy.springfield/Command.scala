@@ -150,8 +150,8 @@ object Command extends App
       for {
         _ <- checkPathIsRelative(cmd.presentation())
         completePath = getCompletePath(cmd.presentation())
-        _ <- getPresentationReferIdPath(completePath)
-        _ <- addSubtitlesToPresentation(1, cmd.languageCode(), completePath, cmd.subtitles())
+        presentationRefId <- getPresentationReferIdPath(completePath)
+        _ <- addSubtitlesToPresentation(1, cmd.languageCode(), presentationRefId, cmd.subtitles())
       } yield "Subtitles added to presentation"
     case Some(cmd @ opts.showAvailableLanguageCodes) =>
       println(config.languages.mkString("\n"))
