@@ -231,7 +231,7 @@ trait Smithers2 {
     else Failure(new IllegalArgumentException(s"$videoReferId does not appear to be a video referid. Expected format: [domain/<d>/]user/<u>/video/<number>"))
   }
 
-  def getPresentationReferIdPath(presentation: Path): Try[Path] = { //TODO if else if can be made more clean
+  def getPresentationReferIdPath(presentation: Path): Try[Path] = { //TODO refine code
     if (isPresentationPath(presentation) && presentation.getFileName.toString.matches("\\d+")) Success(presentation)
     else if (isPresentationPath(presentation)) {
       logger.info(s"received a presentation path with a name, trying to resolve referid for ${ presentation.getFileName }")
