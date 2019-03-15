@@ -181,15 +181,6 @@ trait Smithers2 {
     else path
   }
 
-  def putSubtitlesToPresentation(videoRefInPresentation: Path, languageCode: String, fileName: String): Try[Elem] = {
-    val uri = path2Uri(videoRefInPresentation.resolve("properties").resolve(s"webvtt_$languageCode"))
-    debug(s"Smithers2 URI: $uri")
-    http("PUT", uri, fileName).flatMap(response => {
-      if (response.code == 200) checkResponseOk(response.body)
-      else Failure(new IllegalStateException(s"response code '${ response.code }' was not equal to 200, body = '${ response.body }'"))
-    })
-  }
-
   def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
     val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webvtt_$languageCode"))
     debug(s"Smithers2 URI: $uri")
@@ -240,8 +231,8 @@ trait Smithers2 {
     else Failure(new IllegalArgumentException(s"$videoReferId does not appear to be a video referid. Expected format: [domain/<d>/]user/<u>/video/<number>"))
   }
 
-  def getPresentationReferIdPath(presentation: Path): Try[Path] = {
-    if (isPresentationPath(presentation) && presentation.getFileName.toString.matches("\\d")) Success(presentation)
+  def getPresentationReferIdPath(presentation: Path): Try[Path] = { //TODO if else if can be made more clean
+    if (isPresentationPath(presentation) && presentation.getFileName.toString.matches("\\d+")) Success(presentation)
     else if (isPresentationPath(presentation)) {
       logger.info(s"received a presentation path with a name, trying to resolve referid for ${ presentation.getFileName }")
       getXmlFromPath(presentation)

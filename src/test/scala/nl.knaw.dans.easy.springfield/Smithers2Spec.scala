@@ -107,6 +107,13 @@ class Smithers2Spec extends TestSupportFixture
     }
   }
 
+  "matches" should "mach regex" in {
+    "12343FF".matches("\\d+") shouldBe false
+    "1234311".matches("\\d+") shouldBe true
+
+  }
+
+
   it should "succeed if the path has more than 3 parts and presentation is the penultimate part, and can resolve the presentation name to a referid" in {
     getPresentationReferIdPath(Paths.get("domain/dans/user/utest/presentation/private_continuous")) shouldBe Success(Paths.get(relativizePathString(privateContinuousRefIdPath)))
   }
