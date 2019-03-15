@@ -16,11 +16,11 @@
 package nl.knaw.dans.easy.springfield
 
 import java.net.URI
-import java.nio.file.Paths
+import java.nio.file.{ Path, Paths }
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-import scala.util.{ Failure, Random, Success }
+import scala.util.{ Failure, Random, Success, Try }
 import scala.xml.Elem
 
 class Smithers2Spec extends TestSupportFixture
@@ -30,6 +30,7 @@ class Smithers2Spec extends TestSupportFixture
   override val smithers2ConnectionTimeoutMs: Int = 100000
   override val smithers2ReadTimoutMs: Int = 100000
   override val defaultDomain: String = "dans"
+  private val privateContinuousRefIdPath = "/domain/dans/user/utest/presentation/1"
   private val elem: Elem =
     <fsxml>
         <presentation id="3">
@@ -41,6 +42,20 @@ class Smithers2Spec extends TestSupportFixture
           </videoplaylist>
         </presentation>
       </fsxml>
+
+  //overridden to mock away the rest call to Smithers2
+  override def getXmlFromPath(path: Path): Try[Elem] = Try {
+    if (path.getFileName.toString == "private_continuous")
+    <fsxml>
+      <presentation id="private_continuous" referid={privateContinuousRefIdPath}>
+        <properties>
+          <title/>
+          <description/>
+        </properties>
+      </presentation>
+    </fsxml>
+    else <empty></empty>
+  }
 
   "extractVideoRefFromPresentationForVideoId" should "retrieve a relative path to a video starting from domain" in {
     extractVideoRefFromPresentationForVideoId("1")(elem) shouldBe Success("domain/dans/user/utest/video/5")
@@ -92,8 +107,14 @@ class Smithers2Spec extends TestSupportFixture
     }
   }
 
-  it should "succeed if the path has more than 3 parts and presentation is the penultimate part, even though last part is not a number" in {
-    checkPresentation(Paths.get("domain/dans/user/utest/presentation/notANumber")) shouldBe a[Success[_]]
+  it should "succeed if the path has more than 3 parts and presentation is the penultimate part, and can resolve the presentation name to a referid" in {
+    checkPresentation(Paths.get("domain/dans/user/utest/presentation/private_continuous")) shouldBe Success(Paths.get(privateContinuousRefIdPath))
+  }
+
+  it should "fail if the path has more than 3 parts and presentation is the penultimate part, and cannot resolve the presentation name to a referid" in {
+    checkPresentation(Paths.get("domain/dans/user/utest/presentation/notANumber")) should matchPattern {
+      case Failure(ise: IllegalStateException) if ise.getMessage == "No presentation referid found for presentation name 'notANumber'" =>
+    }
   }
 
   "checkVideoReferId" should "succeed if the path has more than 3 parts and video is the penultimate part" in {
