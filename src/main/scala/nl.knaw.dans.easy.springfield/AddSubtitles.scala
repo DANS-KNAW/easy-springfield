@@ -71,7 +71,7 @@ trait AddSubtitles extends DebugEnhancedLogging {
         val relativePathToVideoProps = s"videoplaylist/1/video/$videoNumber"
         val pathToPresentation = presentation.resolve(relativePathToVideoProps)
         for {
-          _ <- checkPresentation(presentation)
+          _ <- getPresentationReferIdPath(presentation)
           videoRef <- getVideoRefIdForVideoInPresentation(presentation, String.valueOf(videoNumber))
           languageAdjustedFileName = createLanguageAdjustedFileName(head, language)
           _ <- addSubtitlesToVideo(head, Paths.get(videoRef), language) // first add the subtitles to the video, before adding it to the presentation

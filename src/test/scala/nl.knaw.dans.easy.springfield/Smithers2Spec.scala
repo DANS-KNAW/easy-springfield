@@ -89,30 +89,30 @@ class Smithers2Spec extends TestSupportFixture
     extractVideoRefFromPresentationForVideoId("1")(elemDuplicateId) shouldBe Success("domain/dans/user/utest/video/5")
   }
 
-  "checkPresentation" should "succeed if the name path has more than 3 parts and presentation is the penultimate part" in {
-    checkPresentation(Paths.get("domain/dans/user/utest/presentation/1")) shouldBe a[Success[_]]
+  "getPresentationReferIdPath" should "succeed if the name path has more than 3 parts and presentation is the penultimate part" in {
+    getPresentationReferIdPath(Paths.get("domain/dans/user/utest/presentation/1")) shouldBe a[Success[_]]
   }
 
   it should "fail if the path has more than 3 parts and presentation is the last part" in {
     val path = "domain/dans/user/utest/presentation"
-    checkPresentation(Paths.get(path)) should matchPattern {
+    getPresentationReferIdPath(Paths.get(path)) should matchPattern {
       case Failure(iae: IllegalArgumentException) if iae.getMessage == createExceptionMessage(path) =>
     }
   }
 
   it should "fail if the  path has less than 4 parts and presentation is the penultimate part" in {
     val path = "utest/presentation/notANumber"
-    checkPresentation(Paths.get(path)) should matchPattern {
+    getPresentationReferIdPath(Paths.get(path)) should matchPattern {
       case Failure(iae: IllegalArgumentException) if iae.getMessage == createExceptionMessage(path) =>
     }
   }
 
   it should "succeed if the path has more than 3 parts and presentation is the penultimate part, and can resolve the presentation name to a referid" in {
-    checkPresentation(Paths.get("domain/dans/user/utest/presentation/private_continuous")) shouldBe Success(Paths.get(privateContinuousRefIdPath))
+    getPresentationReferIdPath(Paths.get("domain/dans/user/utest/presentation/private_continuous")) shouldBe Success(Paths.get(relativizePathString(privateContinuousRefIdPath)))
   }
 
   it should "fail if the path has more than 3 parts and presentation is the penultimate part, and cannot resolve the presentation name to a referid" in {
-    checkPresentation(Paths.get("domain/dans/user/utest/presentation/notANumber")) should matchPattern {
+    getPresentationReferIdPath(Paths.get("domain/dans/user/utest/presentation/notANumber")) should matchPattern {
       case Failure(ise: IllegalStateException) if ise.getMessage == "No presentation referid found for presentation name 'notANumber'" =>
     }
   }
