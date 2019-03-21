@@ -225,7 +225,7 @@ class Smithers2Spec extends TestSupportFixture
 
   it should "fail if the number of subtitles '0' is not equal to number of videos in the presentation '2'" in {
     validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/3"), List()) should matchPattern {
-      case Failure(e: IllegalArgumentException) if e.getMessage == s"The provided number of subtitles '0' did not match the number of videos in the presentation '2'" =>
+      case Failure(e: IllegalArgumentException) if e.getMessage == "The provided number of subtitles '0' did not match the number of videos in the presentation '2'" =>
     }
   }
 
