@@ -226,7 +226,7 @@ trait Smithers2 {
     } yield ()
   }
 
-  def validateNumberOfVideosIsSameAsNumberOfSubtitles(presentationPath: Path, subtitles: List[Path]): Try[Unit] = {
+  def validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(presentationPath: Path, subtitles: List[Path]): Try[Unit] = {
     getXmlFromPath(presentationPath)
       .map(node => getNumberOfVideos(node)) flatMap  {
       case numberInXml: Int if numberInXml == subtitles.size => Success(())

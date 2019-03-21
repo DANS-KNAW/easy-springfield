@@ -151,7 +151,7 @@ object Command extends App
         _ <- checkPathIsRelative(cmd.presentation())
         completePath = getCompletePath(cmd.presentation())
         presentationRefId <- getPresentationReferIdPath(completePath)
-        _ <- validateNumberOfVideosIsSameAsNumberOfSubtitles(presentationRefId, cmd.subtitles())
+        _ <- validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(presentationRefId, cmd.subtitles())
         _ <- addSubtitlesToPresentation(1, cmd.languageCode(), presentationRefId, cmd.subtitles())
       } yield "Subtitles added to presentation"
     case Some(cmd @ opts.showAvailableLanguageCodes) =>
