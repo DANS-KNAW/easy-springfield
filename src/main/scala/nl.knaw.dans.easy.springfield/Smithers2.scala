@@ -245,13 +245,9 @@ trait Smithers2 {
   }
 
   def getPresentationReferIdPath(presentation: Path): Try[Path] = {
-    if (isPresentationPath(presentation) && presentation.getFileName.toString.matches("\\d+")) Success(presentation)
-    else if (isPresentationPath(presentation)) {
-      logger.info(s"received a presentation path with a name, trying to resolve referid for ${ presentation.getFileName }")
-      getXmlFromPath(presentation)
-        .flatMap(xml => extractPresentationReferIdPath(presentation, xml))
-    }
-    else Failure(new IllegalArgumentException(s"$presentation does not appear to be a presentation referid or Springfield path. Expected format: [domain/<d>/]user/<u>/presentation/<number> OR [domain/<d>/]user/<u>/collection/<c>/presentation/<p>"))
+    if (!isPresentationPath(presentation)) Failure(new IllegalArgumentException(s"$presentation does not appear to be a presentation referid or Springfield path. Expected format: [domain/<d>/]user/<u>/presentation/<number> OR [domain/<d>/]user/<u>/collection/<c>/presentation/<p>"))
+    else if (presentation.getFileName.toString.matches("\\d+")) Success(presentation)
+    else getXmlFromPath(presentation).flatMap(extractPresentationReferIdPath(presentation, _))
   }
 
   private def isPresentationPath(presentation: Path): Boolean = {
