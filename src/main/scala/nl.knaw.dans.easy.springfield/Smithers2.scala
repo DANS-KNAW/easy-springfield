@@ -228,10 +228,9 @@ trait Smithers2 {
 
   def validateNumberOfVideosIsSameAsNumberOfSubtitles(presentationPath: Path, subtitles: List[Path]): Try[Unit] = {
     getXmlFromPath(presentationPath)
-      .flatMap(node => Success(getNumberOfVideos(node))) match {
-      case Success(numberInXml: Int) if numberInXml == subtitles.size => Success(())
-      case Success(numberInXml: Int) => Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '$numberInXml'"))
-      case Failure(t: Throwable) => Failure(t)
+      .map(node => getNumberOfVideos(node)) flatMap  {
+      case numberInXml: Int if numberInXml == subtitles.size => Success(())
+      case numberInXml: Int => Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '$numberInXml'"))
     }
   }
 

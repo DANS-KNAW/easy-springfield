@@ -46,16 +46,17 @@ class Smithers2Spec extends TestSupportFixture
   //overridden to mock away the rest call to Smithers2
   override def getXmlFromPath(path: Path): Try[Elem] = Try {
     path.getFileName.toString match {
-      case "private_continuous" => <fsxml>
-      <presentation id="private_continuous" referid={privateContinuousRefIdPath}>
-        <properties>
-          <title/>
-          <description/>
-        </properties>
-      </presentation>
-    </fsxml>
+      case "private_continuous" =>
+        <fsxml>
+          <presentation id="private_continuous" referid={privateContinuousRefIdPath}>
+            <properties>
+              <title/>
+              <description/>
+            </properties>
+          </presentation>
+        </fsxml>
       case "3" => elem
-      case _ => <empty></empty>
+      case _ => <empty/>
     }
   }
 
@@ -205,18 +206,24 @@ class Smithers2Spec extends TestSupportFixture
   }
 
   it should "return 0 if there are no videos present" in {
-    getNumberOfVideos(<empty></empty>) shouldBe 0
+    getNumberOfVideos(<empty/>) shouldBe 0
   }
 
-  "validateNumberOfVideosIsSameAsNumberOfSubtitles" should "succeed if the number of subtitles is equal to the number of videos in the presentation" in {
-    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/1"), List()) shouldBe a[Success[_]] //0
-    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/3"), List(Paths.get("1"), Paths.get("2"))) shouldBe a[Success[_]] // returns val elem containing 2 videos
+  "validateNumberOfVideosIsSameAsNumberOfSubtitles" should "succeed if the number of subtitles '0' is equal to the number of videos in the presentation '0'" in {
+    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/1"), List()) shouldBe a[Success[_]]
   }
 
-  it should "fail if the number of subtitles is not equal to number of videos in the presentation" in {
+  it should "succeed if the number of subtitles '2' is equal to the number of videos in the presentation '2'" in {
+    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/3"), List(Paths.get("1"), Paths.get("2"))) shouldBe a[Success[_]]
+  }
+
+  it should "fail if the number of subtitles '2' is not equal to number of videos in the presentation '0'" in {
     validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/1"), List(Paths.get("1"), Paths.get("2"))) should matchPattern {
       case Failure(e: IllegalArgumentException) if e.getMessage == s"The provided number of subtitles '2' did not match the number of videos in the presentation '0'" =>
     }
+  }
+
+  it should "fail if the number of subtitles '0' is not equal to number of videos in the presentation '2'" in {
     validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/3"), List()) should matchPattern {
       case Failure(e: IllegalArgumentException) if e.getMessage == s"The provided number of subtitles '0' did not match the number of videos in the presentation '2'" =>
     }
