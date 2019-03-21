@@ -226,6 +226,19 @@ trait Smithers2 {
     } yield ()
   }
 
+  def validateNumberOfVideosIsSameAsNumberOfSubtitles(presentationPath: Path, subtitles: List[Path]): Try[Unit] = {
+    getXmlFromPath(presentationPath)
+      .flatMap(node => Success(getNumberOfVideos(node))) match {
+      case Success(numberInXml: Int) if numberInXml == subtitles.size => Success(())
+      case Success(numberInXml: Int) => Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '$numberInXml'"))
+      case Failure(t: Throwable) => Failure(t)
+    }
+  }
+
+  def getNumberOfVideos(presentationXml: Elem): Int = {
+    (presentationXml \\ "videoplaylist" \\ "video").length
+  }
+
   def checkVideoReferId(videoReferId: Path): Try[Unit] = {
     if (videoReferId.getNameCount > 3 && videoReferId.getName(videoReferId.getNameCount - 2).toString == "video") Success(())
     else Failure(new IllegalArgumentException(s"$videoReferId does not appear to be a video referid. Expected format: [domain/<d>/]user/<u>/video/<number>"))

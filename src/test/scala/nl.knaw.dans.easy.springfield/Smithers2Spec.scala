@@ -45,8 +45,8 @@ class Smithers2Spec extends TestSupportFixture
 
   //overridden to mock away the rest call to Smithers2
   override def getXmlFromPath(path: Path): Try[Elem] = Try {
-    if (path.getFileName.toString == "private_continuous")
-    <fsxml>
+    path.getFileName.toString match {
+      case "private_continuous" => <fsxml>
       <presentation id="private_continuous" referid={privateContinuousRefIdPath}>
         <properties>
           <title/>
@@ -54,7 +54,9 @@ class Smithers2Spec extends TestSupportFixture
         </properties>
       </presentation>
     </fsxml>
-    else <empty></empty>
+      case "3" => elem
+      case _ => <empty></empty>
+    }
   }
 
   "extractVideoRefFromPresentationForVideoId" should "retrieve a relative path to a video starting from domain" in {
@@ -110,9 +112,7 @@ class Smithers2Spec extends TestSupportFixture
   "matches" should "mach regex" in {
     "12343FF".matches("\\d+") shouldBe false
     "1234311".matches("\\d+") shouldBe true
-
   }
-
 
   it should "succeed if the path has more than 3 parts and presentation is the penultimate part, and can resolve the presentation name to a referid" in {
     getPresentationReferIdPath(Paths.get("domain/dans/user/utest/presentation/private_continuous")) shouldBe Success(Paths.get(relativizePathString(privateContinuousRefIdPath)))
@@ -198,6 +198,28 @@ class Smithers2Spec extends TestSupportFixture
   it should "not alter an already complete path (relative), also if the second param is not equal to the default domain" in {
     val completePath = Paths.get("domain/notDans/complete/path")
     getCompletePath(completePath) shouldBe completePath
+  }
+
+  "getNumberOfVideos" should "return the number of videos" in {
+    getNumberOfVideos(elem) shouldBe 2
+  }
+
+  it should "return 0 if there are no videos present" in {
+    getNumberOfVideos(<empty></empty>) shouldBe 0
+  }
+
+  "validateNumberOfVideosIsSameAsNumberOfSubtitles" should "succeed if the number of subtitles is equal to the number of videos in the presentation" in {
+    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/1"), List()) shouldBe a[Success[_]] //0
+    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/3"), List(Paths.get("1"), Paths.get("2"))) shouldBe a[Success[_]] // returns val elem containing 2 videos
+  }
+
+  it should "fail if the number of subtitles is not equal to number of videos in the presentation" in {
+    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/1"), List(Paths.get("1"), Paths.get("2"))) should matchPattern {
+      case Failure(e: IllegalArgumentException) if e.getMessage == s"The provided number of subtitles '2' did not match the number of videos in the presentation '0'" =>
+    }
+    validateNumberOfVideosIsSameAsNumberOfSubtitles(Paths.get("domain/dans/user/utest/presentation/3"), List()) should matchPattern {
+      case Failure(e: IllegalArgumentException) if e.getMessage == s"The provided number of subtitles '0' did not match the number of videos in the presentation '2'" =>
+    }
   }
 
   private def createExceptionMessage(path: String): String = s"$path does not appear to be a presentation referid or Springfield path. Expected format: [domain/<d>/]user/<u>/presentation/<number> OR [domain/<d>/]user/<u>/collection/<c>/presentation/<p>"
