@@ -228,10 +228,11 @@ trait Smithers2 {
 
   def validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(presentationPath: Path, subtitles: List[Path]): Try[Unit] = {
     getXmlFromPath(presentationPath)
-      .map(node => getNumberOfVideos(node)) flatMap  {
-      case numberInXml: Int if numberInXml == subtitles.size => Success(())
-      case numberInXml: Int => Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '$numberInXml'"))
-    }
+      .map(getNumberOfVideos)
+      .flatMap {
+        case numberInXml: Int if numberInXml == subtitles.size => Success(())
+        case numberInXml: Int => Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '$numberInXml'"))
+      }
   }
 
   def getNumberOfVideos(presentationXml: Elem): Int = {
@@ -243,7 +244,7 @@ trait Smithers2 {
     else Failure(new IllegalArgumentException(s"$videoReferId does not appear to be a video referid. Expected format: [domain/<d>/]user/<u>/video/<number>"))
   }
 
-  def getPresentationReferIdPath(presentation: Path): Try[Path] = { //TODO refine code
+  def getPresentationReferIdPath(presentation: Path): Try[Path] = {
     if (isPresentationPath(presentation) && presentation.getFileName.toString.matches("\\d+")) Success(presentation)
     else if (isPresentationPath(presentation)) {
       logger.info(s"received a presentation path with a name, trying to resolve referid for ${ presentation.getFileName }")
