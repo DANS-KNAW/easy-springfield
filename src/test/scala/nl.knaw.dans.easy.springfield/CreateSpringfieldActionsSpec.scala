@@ -66,7 +66,7 @@ class CreateSpringfieldActionsSpec extends TestSupportFixture with Inside with C
     }
   }
 
-  "createSpringfieldActions" should "should have a name space in the root element 'actions'" in {
+  "createSpringfieldActions" should "have a name-space in the root element 'actions'" in {
     val video = Video(Paths.get("a/path/to/somewhere"), "dans", "utest", "1", "2", "3", requireTicket = false)
     createSpringfieldActions(Seq(video)) should matchPattern {
       case Success(n: Elem) if n.namespace == springFieldActionsNameSpace =>
