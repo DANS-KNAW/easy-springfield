@@ -42,6 +42,7 @@ object Command extends App
 
   type FeedBackMessage = String
 
+  private val prologue = "<?xml version='1.0' encoding='UTF-8'?>"
   private val avNames = Set("audio", "video")
   private val opts = new CommandLineOptions(args, config)
   opts.verify()
@@ -72,7 +73,7 @@ object Command extends App
         actions <- createSpringfieldActions(videos)
       } yield (new PrettyPrinter(160, 2).format(actions), parentsToCreate)
       result.map { case (s, ps) =>
-        println(s)
+        println(addPrologue(s))
         "XML generated." + (if (!cmd.videosFolder.isSupplied) " (Existence of files has NOT been checked!)"
                             else "") +
           (if (cmd.checkParentItems()) {
@@ -215,4 +216,6 @@ object Command extends App
     if (StdIn.readLine().toLowerCase == "y") Success(list)
     else Failure(new Exception("User aborted action"))
   }
+
+  private def addPrologue(xml: String): String = s"$prologue\n$xml"
 }

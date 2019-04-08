@@ -68,7 +68,7 @@ trait CreateSpringfieldActions {
   }
 
   def createSpringfieldActions(videos: Seq[Video]): Try[Elem] = Try {
-    <actions>
+    <actions xmlns="springfield-actions">
       { createAddPresentations(videos) }
     </actions>
   }
@@ -93,6 +93,6 @@ trait CreateSpringfieldActions {
   }
 
   def createAddVideo(srcVideo: Path, fileName: String): Elem = {
-      <video src={srcVideo.toString} target={fileName}/>
+      <video src={srcVideo.toString} target={fileName} title={} />
   }
 }
