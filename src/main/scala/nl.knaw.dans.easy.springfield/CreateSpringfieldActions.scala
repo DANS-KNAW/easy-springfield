@@ -93,6 +93,6 @@ trait CreateSpringfieldActions {
   }
 
   def createAddVideo(srcVideo: Path, fileName: String): Elem = {
-      <video src={srcVideo.toString} target={fileName} title={} />
+      <video src={srcVideo.toString} target={fileName}/>
   }
 }
