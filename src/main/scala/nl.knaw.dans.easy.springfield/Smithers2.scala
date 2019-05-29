@@ -169,11 +169,11 @@ trait Smithers2 {
       .flatMap(extractVideoRefFromPresentationForVideoId(id))
   }
 
-  private[springfield] def extractVideoRefFromPresentationForVideoId(index: String)(presentationXml: Elem): Try[String] = Try {
+  private[springfield] def extractVideoRefFromPresentationForVideoId(id: String)(presentationXml: Elem): Try[String] = Try {
     (presentationXml \\ "video")
-      .collectFirst { case node if (node \ "@id").text == index => (node \\ "@referid").text }
+      .collectFirst { case node if (node \ "@id").text == id => (node \\ "@referid").text }
       .map(relativizePathString)
-      .getOrElse(throw new IllegalStateException(s"No videoReference found for index '$index' in the presentation"))
+      .getOrElse(throw new IllegalStateException(s"No videoReference found for id '$id' in the presentation"))
   }
 
   private[springfield] def relativizePathString(path: String): String = {
@@ -226,17 +226,26 @@ trait Smithers2 {
     } yield ()
   }
 
-  def validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(presentationPath: Path, subtitles: List[Path]): Try[Unit] = {
-    getXmlFromPath(presentationPath)
-      .map(getNumberOfVideos)
-      .flatMap {
-        case numberInXml: Int if numberInXml == subtitles.size => Success(())
-        case numberInXml: Int => Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '$numberInXml'"))
-      }
+  def validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(videos: List[String], subtitles: List[Path]): Try[Unit] = {
+    if (videos.length == subtitles.size) Success(())
+    else Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '${ videos.length }'"))
   }
 
-  def getNumberOfVideos(presentationXml: Elem): Int = {
-    (presentationXml \\ "videoplaylist" \\ "video").length
+  def zipVideoPathsWithIds(paths: List[Path], ids: List[String]): List[VideoPathWithId] = {
+    (paths, ids)
+      .zipped.toList
+      .map(tuple => VideoPathWithId(tuple._1, tuple._2))
+  }
+
+  private def getVideoIds(presentationXml: Elem): List[String] = {
+    (presentationXml \\ "videoplaylist" \\ "video")
+      .collect { case node if node.attribute("id").isDefined => String.valueOf(node.attribute("id").get) }
+      .toList
+  }
+
+  def getVideoIdsForPresentation(presentationPath: Path): Try[List[String]] = {
+    getXmlFromPath(presentationPath)
+      .map(getVideoIds)
   }
 
   def checkVideoReferId(videoReferId: Path): Try[Unit] = {

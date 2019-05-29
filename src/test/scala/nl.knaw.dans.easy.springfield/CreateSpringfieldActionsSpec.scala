@@ -61,6 +61,4 @@ class CreateSpringfieldActionsSpec extends TestSupportFixture with Inside with C
         v2.attribute("target").get.head.text shouldBe "vid02.mp4"
     }
   }
-
-
 }
