@@ -48,15 +48,12 @@ trait Smithers2 {
     trace(path)
     val uri = path2Uri(path)
     debug(s"Smithers2 URI: $uri")
-    val result = for {
-      response <- http("GET", uri)
-      if response.code == 200
-      _ <- checkResponseOk(response.body)
-    } yield (path, true)
-    result.recoverWith {
-      case SpringfieldErrorException(errorCode, _, _) if errorCode == 404 => Success((path, false))
-      case e => Failure(e)
-    }
+    sendRequestAndCheckResponse(uri, "GET")
+      .map(_ => (path, true))
+      .recoverWith {
+        case SpringfieldErrorException(errorCode, _, _) if errorCode == 404 => Success((path, false))
+        case e => Failure(e)
+      }
   }
 
   /**
@@ -113,17 +110,13 @@ trait Smithers2 {
     trace(name, title, description, targetUser, targetDomain)
     val uri = path2Uri(Paths.get("domain", targetDomain, "user", targetUser, "collection", name, "properties"))
     debug(s"Smithers2 URI: $uri")
-    for {
-      response <- http("PUT", uri,
-        <fsxml>
+    val xml = <fsxml>
           <properties>
             <title>{ title }</title>
             <description>{ description }</description>
           </properties>
-        </fsxml>.toString)
-      if response.code == 200
-      _ <- checkResponseOk(response.body)
-    } yield ()
+        </fsxml>.toString
+    sendRequestAndCheckResponse(uri, "PUT", xml)
   }
 
   def createPresentation(title: String, description: String, isPrivate: Boolean, targetUser: String, targetDomain: String): Try[String] = {
@@ -147,15 +140,8 @@ trait Smithers2 {
 
   def getReferencedPaths(path: Path): Try[Seq[Path]] = {
     getXmlFromPath(path)
-      .map(_ \\ "@referid")
-      .map {
-        _.map {
-          n =>
-            if (n.text.startsWith("/")) n.text.substring(1)
-            else n.text
-        }
-          .map(Paths.get(_))
-      }
+      .map(node => (node \\ "@referid")
+        .map(iNode => relativizePathStringToPath(iNode.text)))
       .map {
         paths =>
           paths.map(getReferencedPaths).collectResults.map {
@@ -184,13 +170,12 @@ trait Smithers2 {
     else path
   }
 
-  def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
+  private[springfield] def relativizePathStringToPath(path: String): Path = Paths.get(relativizePathString(path))
+
+  def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Unit] = {
     val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webvtt_$languageCode"))
     debug(s"Smithers2 URI: $uri")
-    http("PUT", uri, fileName).flatMap(response => {
-      if (response.code == 200) checkResponseOk(response.body)
-      else Failure(new IllegalStateException(s"response code '${ response.code }' was not equal to 200, body = '${ response.body }'"))
-    })
+    sendRequestAndCheckResponse(uri, "PUT", fileName)
   }
 
   def addVideoRefToPresentation(videoReferId: Path, videoName: String, presentation: Path): Try[Unit] = {
@@ -221,7 +206,6 @@ trait Smithers2 {
     <fsxml><attributes><referid>{ "/" + getCompletePath(presentationReferId).toString }</referid></attributes></fsxml>.toString
   }
 
-  def validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(presentationPath: Path, subtitles: List[Path]): Try[Unit] = {
   def validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(videos: List[String], subtitles: List[Path]): Try[Unit] = {
     if (videos.length == subtitles.size) Success(())
     else Failure(new IllegalArgumentException(s"The provided number of subtitles '${ subtitles.size }' did not match the number of videos in the presentation '${ videos.length }'"))
@@ -329,11 +313,8 @@ trait Smithers2 {
   }
 
   private def sendRequestAndCheckResponse(uri: URI, method: String, body: String = null): Try[Unit] = {
-    for {
-      response <- http(method, uri)
-      if response.code == 200
-      _ <- checkResponseOk(response.body)
-    } yield ()
+    http(method, uri)
+      .map(response => if (response.code == 200) checkResponseOk(response.body))
   }
 
   def checkResponseOk(content: Array[Byte]): Try[Elem] = {
