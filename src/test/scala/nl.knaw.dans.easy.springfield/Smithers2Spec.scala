@@ -42,6 +42,8 @@ class Smithers2Spec extends TestSupportFixture
               <video id="id that contains words" referid="/domain/dans/user/utest/video/7">
             </video>
           </videoplaylist>
+          <videoplaylist id="some_playlist_id">
+            </videoplaylist>
         </presentation>
       </fsxml>
 
@@ -240,6 +242,21 @@ class Smithers2Spec extends TestSupportFixture
 
   it should "return return an empty list if the presentation has no videos" in {
     getVideoIdsForPresentation(Paths.get("private_continuous")) shouldBe Success(List())
+  }
+
+  "extractVideoPlaylistIds" should "return the ids of the playlists in the presentation" in {
+    getXmlFromPath(Paths.get("3"))
+      .map(extractVideoPlaylistIds) shouldBe Success(List("1", "some_playlist_id"))
+  }
+
+  "extractPresentationFromCollection" should "return the path to the presentation" in {
+    getXmlFromPath(Paths.get("private_continuous"))
+      .map(extractPresentationFromCollection) shouldBe Success(Paths.get("/domain/dans/user/utest/presentation/1"))
+  }
+
+  it should "return nothing if no presentations are found" in {
+    getXmlFromPath(Paths.get("3"))
+      .map(extractPresentationFromCollection) shouldBe Success(Paths.get(""))
   }
 
   private def createExceptionMessage(path: String): String = s"$path does not appear to be a presentation referid or Springfield path. Expected format: [domain/<d>/]user/<u>/presentation/<number> OR [domain/<d>/]user/<u>/collection/<c>/presentation/<p>"
