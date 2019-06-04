@@ -205,7 +205,7 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
 
   val setTitle = new Subcommand("set-title") {
     descr("""Sets the title of a video/audio within a presentation. The springfield-presentation-path
-            |must be either a direct presentation referid or full path that can be resolved to a presentation.""")
+            |must be either a direct presentation referid or full path that can be resolved to a presentation.""".stripMargin)
   val title: ScallopOption[String] = opt(name = "title", short = 't',
     descr = "The (new) name of the video/audio element with a presentation",
     required = true)
