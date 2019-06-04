@@ -304,8 +304,8 @@ ARGUMENTS
                                         audio/video) or not (public audio/video)
         ---
         
-        Subcommand: set-title - Sets the title of a video/audio within a presentation. The springfield-presentation-path
-                    |must be either a direct presentation referid or full path that can be resolved to a presentation.
+        Subcommand: set-title - Sets the title of a video/audio within a presentation. The springfield-presentation-path must be either a direct presentation referid
+         or full path that can be resolved to a presentation.
           -t, --title  <arg>          The (new) name of the video/audio element with a
                                       presentation
           -v, --video-number  <arg>   The number/ index of the video within the

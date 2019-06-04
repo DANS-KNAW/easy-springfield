@@ -27,7 +27,6 @@ trait SetTitle extends DebugEnhancedLogging {
   def setTitle(video: String, title: String, presentation: Path): Try[Unit] = Try {
     for {
       xml <- getXmlFromPath(presentation)
-      _ <- checkCollection()
       videoPath <- extractVideoRefFromPresentationForVideoId(video)(xml)
       titlePath = toTitlePath(videoPath)
       _ <- setTicket(titlePath, title)
