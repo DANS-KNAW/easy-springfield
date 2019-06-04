@@ -18,6 +18,7 @@ SYNOPSIS
       <videos-csv> > springfield-actions.xml
     easy-springfield status [-u, --user <arg>][-d, --domain <arg>]
     easy-springfield set-require-ticket <springfield-path> {true|false}
+    easy-springfield set-title --title,-t <title> --video-number,-v <number> <springfield-presentation-path>
     easy-springfield create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] \
       <springfield-path>
     easy-springfield delete-ticket <ticket>
@@ -301,6 +302,18 @@ ARGUMENTS
           require-ticket (required)     true or false: whether to require a ticket
                                         before playing the presentation (private
                                         audio/video) or not (public audio/video)
+        ---
+        
+        Subcommand: set-title - Sets the title of a video/audio within a presentation. The springfield-presentation-path
+                    |must be either a direct presentation referid or full path that can be resolved to a presentation.
+          -t, --title  <arg>          The (new) name of the video/audio element with a
+                                      presentation
+          -v, --video-number  <arg>   The number/ index of the video within the
+                                      presentation (default = 1)
+          -h, --help                  Show help message
+        
+         trailing arguments:
+          presentation (required)   referid of the presentation
         ---
 
         Subcommand: create-ticket - Creates and registers an authorization ticket for a specified presentation.

@@ -78,6 +78,17 @@ trait Smithers2 {
     } yield ()
   }
 
+  def setTicket(videoTitlePath: Path, title: String): Try[Unit] = {
+    trace(videoTitlePath, title)
+    val uri = path2Uri(videoTitlePath)
+    debug(s"Smithers2 URI: $uri")
+    for {
+      response <- http("PUT", uri, title)
+      if response.code == 200
+      _ <- checkResponseOk(response.body)
+    } yield ()
+  }
+
   /**
    * Attempts to delete the item at `path`
    *

@@ -36,7 +36,8 @@ object Command extends App
   with GetStatus
   with GetProgressOfCurrentJobs
   with CreateSpringfieldActions
-  with Ticket {
+  with Ticket
+  with SetTitle {
 
   import scala.language.reflectiveCalls
 
@@ -112,6 +113,13 @@ object Command extends App
            """.stripMargin)
         _ <- avFiles.map(setRequireTicket(_, cmd.requireTicket().toBoolean)).collectResults
       } yield s"Video(s) set to require-ticket = ${ cmd.requireTicket() }"
+    case Some(cmd @ opts.setTitle) =>
+      for {
+        _ <- checkPathIsRelative(cmd.presentation())
+        completePath = getCompletePath(cmd.presentation())
+        presentationRefId <- getPresentationReferIdPath(completePath)
+        _ <- setTitle(cmd.videoNumber(), cmd.title(), presentationRefId)
+      } yield "Title set"
     case Some(cmd @ opts.createTicket) =>
       for {
         _ <- checkPathIsRelative(cmd.path())

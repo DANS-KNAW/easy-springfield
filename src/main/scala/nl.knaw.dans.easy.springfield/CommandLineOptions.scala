@@ -41,6 +41,7 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
        |    <videos-csv> > springfield-actions.xml
        |$printedName status [-u, --user <arg>][-d, --domain <arg>]
        |$printedName set-require-ticket <springfield-path> {true|false}
+       |$printedName set-title --title,-t <title> --video-number,-v <number> <springfield-presentation-path>
        |$printedName create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] \\
        |    <springfield-path>
        |$printedName delete-ticket <ticket>
@@ -201,6 +202,23 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(setRequireTicket)
+
+  val setTitle = new Subcommand("set-title") {
+    descr("""Sets the title of a video/audio within a presentation. The springfield-presentation-path
+            |must be either a direct presentation referid or full path that can be resolved to a presentation.""")
+  val title: ScallopOption[String] = opt(name = "title", short = 't',
+    descr = "The (new) name of the video/audio element with a presentation",
+    required = true)
+    val videoNumber: ScallopOption[String] = opt(name = "video-number", short = 'v',
+      descr = "The number/ index of the video within the presentation",
+      default = Some("1")) //TODO default 1 or require and fail if not provided?
+    val presentation: ScallopOption[Path] = trailArg(name = "presentation",
+      descr = "referid of the presentation",
+      required = true)
+
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(setTitle)
 
   val createTicket = new Subcommand("create-ticket") {
     descr(
