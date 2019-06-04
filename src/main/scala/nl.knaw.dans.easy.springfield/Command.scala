@@ -159,7 +159,7 @@ object Command extends App
         _ <- checkPathIsRelative(cmd.presentation())
         completePath = getCompletePath(cmd.presentation())
         presentationRefId <- getPresentationReferIdPath(completePath)
-        videos <- getVideoIdsForPresentation(completePath)
+        videos <- getVideoIdsForPresentation(presentationRefId)
         _ <- validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(videos, cmd.subtitles())
         videoPathsWithIds = zipVideoPathsWithIds(cmd.subtitles(), videos)
         _ <- addSubtitlesToPresentation(cmd.languageCode(), presentationRefId, videoPathsWithIds)
