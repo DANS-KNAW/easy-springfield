@@ -203,7 +203,11 @@ trait Smithers2 {
   }
 
   private def createReferidEnvelope(presentationReferId: Path): String = {
-    <fsxml><attributes><referid>{ "/" + getCompletePath(presentationReferId).toString }</referid></attributes></fsxml>.toString
+    <fsxml>
+      <attributes>
+        <referid>{ "/" + getCompletePath(presentationReferId).toString }</referid>
+      </attributes>
+    </fsxml>.toString
   }
 
   def validateNumberOfVideosInPresentationIsEqualToNumberOfSubtitles(videos: List[String], subtitles: List[Path]): Try[Unit] = {
@@ -313,7 +317,7 @@ trait Smithers2 {
   }
 
   private def sendRequestAndCheckResponse(uri: URI, method: String, body: String = null): Try[Unit] = {
-    http(method, uri)
+    http(method, uri, body)
       .map(response => if (response.code == 200) checkResponseOk(response.body))
   }
 
