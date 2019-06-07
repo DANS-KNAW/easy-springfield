@@ -15,16 +15,21 @@
  */
 package nl.knaw.dans.easy.springfield
 
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import java.nio.file.{ Path, Paths }
 import java.util.UUID
 
 import nl.knaw.dans.easy.springfield.AvType._
+import nl.knaw.dans.easy.springfield.Playmode.Playmode
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import resource.managed
+import org.rogach.scallop.Subcommand
 
 import scala.io.StdIn
 import scala.util.{ Failure, Success, Try }
-import scala.xml.PrettyPrinter
+import scala.xml.{ PrettyPrinter, XML }
 
 object Command extends App
   with DebugEnhancedLogging
@@ -37,7 +42,8 @@ object Command extends App
   with GetProgressOfCurrentJobs
   with CreateSpringfieldActions
   with Ticket
-  with SetTitle {
+  with SetTitle
+  with SetPlaymode {
 
   import scala.language.reflectiveCalls
 
@@ -71,9 +77,9 @@ object Command extends App
                                .map(_.filterNot(_._2).map(_._1))
                            else Success(Set[Path]())
         actions <- createSpringfieldActions(videos)
-      } yield (new PrettyPrinter(160, 2).format(actions), parentsToCreate)
+      } yield (XML.loadString(new PrettyPrinter(160, 2).format(actions)), parentsToCreate)
       result.map { case (s, ps) =>
-        println(s)
+        managed(new OutputStreamWriter(Console.out)).acquireAndGet(XML.write(_, s, StandardCharsets.UTF_8.name, xmlDecl = true, null))
         "XML generated." + (if (!cmd.videosFolder.isSupplied) " (Existence of files has NOT been checked!)"
                             else "") +
           (if (cmd.checkParentItems()) {
@@ -120,6 +126,15 @@ object Command extends App
         presentationRefId <- getPresentationReferIdPath(completePath)
         _ <- setTitle(cmd.videoNumber(), cmd.title(), presentationRefId)
       } yield "Title set"
+    case Some(cmd @ opts.setPlayMode) =>
+      for {
+        _ <- checkPathIsRelative(cmd.path())
+        completePath = getCompletePath(cmd.path())
+        presentationReferId <- getPresentationReferIdPath(completePath)
+        playmode <- toPlayMode(cmd.mode())
+        _ <- setPlayModeForPresentation(presentationReferId, playmode)
+      } yield "Play mode added or changed."
+
     case Some(cmd @ opts.createTicket) =>
       for {
         _ <- checkPathIsRelative(cmd.path())
@@ -166,6 +181,13 @@ object Command extends App
       println(config.languages.mkString("\n"))
       Success("Finished printing supported language codes.")
     case _ => Failure(new IllegalArgumentException("Enter a valid subcommand"))
+  }
+
+  private def toPlayMode(mode: String): Try[Playmode] = Try {
+    Playmode.
+      values
+      .find(_.toString == mode)
+      .getOrElse(throw new IllegalArgumentException(s"playmode `$mode` not one of ${ Playmode.values }"))
   }
 
   result.map(msg => Console.err.println(s"OK: $msg"))

@@ -42,6 +42,7 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
        |$printedName status [-u, --user <arg>][-d, --domain <arg>]
        |$printedName set-require-ticket <springfield-path> {true|false}
        |$printedName set-title --title,-t <title> --video-number,-v <number> <springfield-presentation-path>
+       |$printedName set-play-mode <springfield-presentation-path> {menu|continuous}
        |$printedName create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] \\
        |    <springfield-path>
        |$printedName delete-ticket <ticket>
@@ -53,7 +54,7 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
        |$printedName show-available-language-codes
      """.stripMargin
 
-  version(s"$printedName v${config.version}")
+  version(s"$printedName v${ config.version }")
 
   banner(
     s"""
@@ -220,6 +221,22 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(setTitle)
+
+  val setPlayMode = new Subcommand("set-play-mode") {
+    descr(
+      """Sets the play-mode property of the presentation as specified. The springfield-presentation-path
+      must be either a direct presentation referid or full path that can be resolved to a presentation.""")
+    val path: ScallopOption[Path] = trailArg(name = "springfield-presentation-path",
+      descr = "the parent of items to change",
+      required = true)
+    val mode: ScallopOption[String] = trailArg(name = "mode",
+      descr = "The play mode of the presentation which is either 'menu' or 'continuous'",
+      required = true)
+    validate(mode)(mode => if (mode.trim.equals("menu") || mode.trim.equals("continuous")) Right(())
+                           else Left(s"The supplied mode '$mode' should be either 'menu' or 'continuous'."))
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(setPlayMode)
 
   val createTicket = new Subcommand("create-ticket") {
     descr(
