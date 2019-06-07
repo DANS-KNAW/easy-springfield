@@ -11,17 +11,17 @@ SYNOPSIS
     easy-springfield list-collections <user> [<domain>]
     easy-springfield create-user <user> [<domain>]
     easy-springfield create-collection [-t, --title <arg>] [-d, --description <arg>] \
-      <collection> <user> [<domain>]
+        <collection> <user> [<domain>]
     easy-springfield create-presentation [-t, --title <arg>] [-d, --description <arg>] \
-      [-r, --require-ticket] <user> [<domain>]
+        [-r, --require-ticket] <user> [<domain>]
     easy-springfield create-springfield-actions [-c, --check-parent-items] [-v, --videos-folder <arg>] \
-      <videos-csv> > springfield-actions.xml
+        <videos-csv> > springfield-actions.xml
     easy-springfield status [-u, --user <arg>][-d, --domain <arg>]
     easy-springfield set-require-ticket <springfield-path> {true|false}
-    easy-springfield set-play-mode <springfield-presentation-path> {menu|continuous}
     easy-springfield set-title --title,-t <title> --video-number,-v <number> <springfield-presentation-path>
+    easy-springfield set-play-mode <springfield-presentation-path> {menu|continuous}
     easy-springfield create-ticket [-e,--expires-after-seconds <arg>] [-t, --ticket <arg>] \
-      <springfield-path>
+        <springfield-path>
     easy-springfield delete-ticket <ticket>
     easy-springfield delete [-r, --with-referenced-items] <springfield-path>
     easy-springfield add-videoref-to-presentation <video> <name> <presentation>
@@ -29,8 +29,6 @@ SYNOPSIS
     easy-springfield add-subtitles-to-video --language <code> <video> <web-vtt-file>
     easy-springfield add-subtitles-to-presentation --language <code> <presentation> <web-vtt-file>...
     easy-springfield show-available-language-codes
-
-Note:  `add-subtitles-to-video` and `add-subtitles-to-presentation` are still to be implememented.
 
 DESCRIPTION
 -----------

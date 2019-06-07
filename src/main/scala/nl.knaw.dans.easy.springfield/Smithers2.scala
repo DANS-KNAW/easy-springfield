@@ -78,11 +78,7 @@ trait Smithers2 {
     trace(videoTitlePath, title)
     val uri = path2Uri(videoTitlePath)
     debug(s"Smithers2 URI: $uri")
-    for {
-      response <- http("PUT", uri, title)
-      if response.code == 200
-      _ <- checkResponseOk(response.body)
-    } yield ()
+    sendRequestAndCheckResponse(uri, "PUT", title)
   }
 
   /**
