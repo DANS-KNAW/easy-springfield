@@ -74,11 +74,11 @@ trait Smithers2 {
     sendRequestAndCheckResponse(uri, "PUT")
   }
 
-  def setTicket(videoTitlePath: Path, title: String): Try[Unit] = {
-    trace(videoTitlePath, title)
-    val uri = path2Uri(videoTitlePath)
+  def setProperty(propertyPath: Path, propertyValue: String): Try[Unit] = {
+    trace(propertyPath, propertyValue)
+    val uri = path2Uri(propertyPath)
     debug(s"Smithers2 URI: $uri")
-    sendRequestAndCheckResponse(uri, "PUT", title)
+    sendRequestAndCheckResponse(uri, "PUT", propertyValue)
   }
 
   /**
@@ -105,17 +105,13 @@ trait Smithers2 {
     trace(name, title, description, targetUser, targetDomain)
     val uri = path2Uri(Paths.get("domain", targetDomain, "user", targetUser, "collection", name, "properties"))
     debug(s"Smithers2 URI: $uri")
-    for {
-      response <- http("PUT", uri,
+    sendRequestAndCheckResponse(uri, "PUT",
         <fsxml>
           <properties>
             <title>{ title }</title>
             <description>{ description }</description>
           </properties>
         </fsxml>.toString)
-      if response.code == 200
-      _ <- checkResponseOk(response.body)
-    } yield ()
   }
 
   def createPresentation(title: String, description: String, isPrivate: Boolean, targetUser: String, targetDomain: String): Try[String] = {
@@ -165,10 +161,11 @@ trait Smithers2 {
   }
 
   private[springfield] def extractVideoRefFromPresentationForVideoId(videoId: String)(presentationXml: Elem): Try[String] = Try {
+   println(presentationXml)
     (presentationXml \\ "video")
       .collectFirst { case node if (node \ "@id").text == videoId => (node \\ "@referid").text }
       .map(relativizePathString)
-      .getOrElse(throw new IllegalStateException(s"No videoReference found for index '$videoId' in the presentation"))
+      .getOrElse(throw new IllegalStateException(s"No videoReference found for id '$videoId' in the presentation"))
   }
 
   private[springfield] def relativizePathString(path: String): String = {

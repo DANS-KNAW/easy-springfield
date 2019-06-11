@@ -24,12 +24,12 @@ import scala.util.Try
 trait SetTitle extends DebugEnhancedLogging {
   this: Smithers2 =>
 
-  def setTitle(video: String, title: String, presentation: Path): Try[Unit] = Try {
+  def setTitle(video: String, title: String, presentation: Path): Try[Unit] = {
     for {
       xml <- getXmlFromPath(presentation)
       videoPath <- extractVideoRefFromPresentationForVideoId(video)(xml)
       titlePath = toTitlePath(videoPath)
-      _ <- setTicket(titlePath, title)
+      _ <- setProperty(titlePath, title)
     } yield ()
   }
 
