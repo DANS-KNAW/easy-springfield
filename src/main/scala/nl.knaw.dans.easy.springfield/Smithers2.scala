@@ -60,20 +60,13 @@ trait Smithers2 {
   }
 
   /**
-   * Sets or clears the requireTicket flag on the specified audio/video file. The path must point to the
+   * Sets or clears a property on the specified audio/video file. The path must point to the
    * actual audio/video resource, not to a reference to the audio/video
    *
-   * @param avFile        path to the audio/video
-   * @param requireTicket true to set the flag, false to clear it
+   * @param avFile        path to the audio/video property that needs to be changed
+   * @param propertyValue value of the property
    * @return
    */
-  def setRequireTicket(avFile: Path, requireTicket: Boolean): Try[Unit] = {
-    trace(avFile, requireTicket)
-    val uri = path2Uri(avFile.resolve("properties").resolve("private"))
-    debug(s"Smithers2 URI: $uri")
-    sendRequestAndCheckResponse(uri, "PUT")
-  }
-
   def setProperty(propertyPath: Path, propertyValue: String): Try[Unit] = {
     trace(propertyPath, propertyValue)
     val uri = path2Uri(propertyPath)
@@ -106,7 +99,7 @@ trait Smithers2 {
     val uri = path2Uri(Paths.get("domain", targetDomain, "user", targetUser, "collection", name, "properties"))
     debug(s"Smithers2 URI: $uri")
     sendRequestAndCheckResponse(uri, "PUT",
-        <fsxml>
+      <fsxml>
           <properties>
             <title>{ title }</title>
             <description>{ description }</description>
@@ -161,7 +154,6 @@ trait Smithers2 {
   }
 
   private[springfield] def extractVideoRefFromPresentationForVideoId(videoId: String)(presentationXml: Elem): Try[String] = Try {
-   println(presentationXml)
     (presentationXml \\ "video")
       .collectFirst { case node if (node \ "@id").text == videoId => (node \\ "@referid").text }
       .map(relativizePathString)
@@ -173,13 +165,10 @@ trait Smithers2 {
     else path
   }
 
-  def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
+  def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Unit] = {
     val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webvtt_$languageCode"))
-    debug(s"Smithers2 URI: $uri")
-    http("PUT", uri, fileName).flatMap(response => {
-      if (response.code == 200) checkResponseOk(response.body)
-      else Failure(new IllegalStateException(s"response code '${ response.code }' was not equal to 200, body = '${ response.body }'"))
-    })
+    debug(s"Smithers2 URI: $uri fileName: $fileName languageCode: $languageCode")
+    sendRequestAndCheckResponse(uri, "PUT", fileName)
   }
 
   def addVideoRefToPresentation(videoReferId: Path, videoName: String, presentation: Path): Try[Unit] = {
@@ -247,10 +236,9 @@ trait Smithers2 {
       .getOrElse(throw new IllegalArgumentException(s"No presentation with name $presentationName"))
   }
 
-  def extractVideoPlaylistIds(presentationXml: Elem): List[String] = {
+  def extractVideoPlaylistIds(presentationXml: Elem): Seq[String] = {
     (presentationXml \\ "videoplaylist")
       .map(node => (node \ "@id").text)
-      .toList
   }
 
   def getPresentationReferIdPath(presentation: Path): Try[Path] = {
