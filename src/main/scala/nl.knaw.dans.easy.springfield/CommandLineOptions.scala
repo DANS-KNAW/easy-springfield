@@ -213,7 +213,7 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
     required = true)
     val videoNumber: ScallopOption[String] = opt(name = "video-number", short = 'v',
       descr = "The number/ index of the video within the presentation",
-      default = Some("1")) //TODO default 1 or require and fail if not provided?
+      default = Some("1")) 
     val presentation: ScallopOption[Path] = trailArg(name = "presentation",
       descr = "referid of the presentation",
       required = true)
