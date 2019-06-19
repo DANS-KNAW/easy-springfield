@@ -37,11 +37,7 @@ trait Smithers2 {
     trace(path)
     val uri = path2Uri(path)
     debug(s"Smithers2 URI: $uri")
-    for {
-      response <- http("GET", uri)
-      if response.code == 200
-      xml <- checkResponseOk(response.body)
-    } yield xml
+    sendRequestAndCheckResponse(uri, "GET")
   }
 
   def checkPathExists(path: Path): Try[(Path, Boolean)] = {
@@ -64,7 +60,7 @@ trait Smithers2 {
    * @param propertyValue value of the property
    * @return
    */
-  def setProperty(propertyPath: Path, propertyValue: String): Try[Unit] = {
+  def setProperty(propertyPath: Path, propertyValue: String): Try[Elem] = {
     trace(propertyPath, propertyValue)
     val uri = path2Uri(propertyPath)
     debug(s"Smithers2 URI: $uri")
@@ -77,21 +73,21 @@ trait Smithers2 {
    * @param path the Springfield path of the item to delete
    * @return Success if the item was deleted, Failure with an error message otherwise
    */
-  def deletePath(path: Path): Try[Unit] = {
+  def deletePath(path: Path): Try[Elem] = {
     trace(path)
     val uri = path2Uri(path)
     debug(s"Smithers2 URI: $uri")
     sendRequestAndCheckResponse(uri, "DELETE")
   }
 
-  def createUser(user: String, targetDomain: String): Try[Unit] = {
+  def createUser(user: String, targetDomain: String): Try[Elem] = {
     trace(user, targetDomain)
     val uri = path2Uri(Paths.get("domain", targetDomain, "user", user, "properties"))
     debug(s"Smithers2 URI: $uri")
     sendRequestAndCheckResponse(uri, "PUT", <fsxml><properties/></fsxml>.toString)
   }
 
-  def createCollection(name: String, title: String, description: String, targetUser: String, targetDomain: String): Try[Unit] = {
+  def createCollection(name: String, title: String, description: String, targetUser: String, targetDomain: String): Try[Elem] = {
     trace(name, title, description, targetUser, targetDomain)
     val uri = path2Uri(Paths.get("domain", targetDomain, "user", targetUser, "collection", name, "properties"))
     debug(s"Smithers2 URI: $uri")
@@ -107,20 +103,16 @@ trait Smithers2 {
   def createPresentation(title: String, description: String, isPrivate: Boolean, targetUser: String, targetDomain: String): Try[String] = {
     trace(title, description, targetUser, targetDomain)
     val uri = path2Uri(Paths.get("domain", targetDomain, "user", targetUser, "presentation"))
-    for {
-      response <- http("POST", uri,
-        <fsxml>
+    val xml = <fsxml>
           <properties>
             <title>{ title }</title>
             <description>{ description }</description>
           </properties>
           <videoplaylist id="1"><properties><private>{ isPrivate }</private></properties></videoplaylist>
-        </fsxml>.toString)
-      if response.code == 200
-      xml <- checkResponseOk(response.body)
-      _ = debug(s"Return xml = ${ xml.toString }")
-      referId <- Try { xml \ "properties" \ "uri" }
-    } yield referId.head.text
+        </fsxml>.toString
+
+    sendRequestAndCheckResponse(uri, "POST", xml)
+      .flatMap(xml =>  Try((xml \  "properties" \ "uri").head.text))
   }
 
   def getReferencedPaths(path: Path): Try[Seq[Path]] = {
@@ -157,7 +149,7 @@ trait Smithers2 {
 
   private[springfield] def relativizePathStringToPath(path: String): Path = Paths.get(relativizePathString(path))
 
-  def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Unit] = {
+  def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Elem] = {
     val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webvtt_$languageCode"))
     debug(s"Smithers2 URI: $uri fileName: $fileName languageCode: $languageCode")
     sendRequestAndCheckResponse(uri, "PUT", fileName)
@@ -297,9 +289,10 @@ trait Smithers2 {
       .asBytes
   }
 
-  private def sendRequestAndCheckResponse(uri: URI, method: String, body: String = null): Try[Unit] = {
+  private def sendRequestAndCheckResponse(uri: URI, method: String, body: String = null): Try[Elem] = {
     http(method, uri, body)
-      .map(response => if (response.code == 200) checkResponseOk(response.body))
+      .flatMap(response => if (response.code == 200) checkResponseOk(response.body)
+                           else Failure(new RuntimeException(s"received non 2xx code from Smithers: ${ response.code } with message: ${ new String(response.body) }")))
   }
 
   private def checkResponseOk(content: Array[Byte]): Try[Elem] = {
