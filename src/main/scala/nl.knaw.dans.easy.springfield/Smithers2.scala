@@ -57,33 +57,18 @@ trait Smithers2 {
   }
 
   /**
-   * Sets or clears the requireTicket flag on the specified audio/video file. The path must point to the
+   * Sets or clears a property on the specified audio/video file. The path must point to the
    * actual audio/video resource, not to a reference to the audio/video
    *
-   * @param avFile        path to the audio/video
-   * @param requireTicket true to set the flag, false to clear it
+   * @param avFile        path to the audio/video property that needs to be changed
+   * @param propertyValue value of the property
    * @return
    */
-  def setRequireTicket(avFile: Path, requireTicket: Boolean): Try[Unit] = {
-    trace(avFile, requireTicket)
-    val uri = path2Uri(avFile.resolve("properties").resolve("private"))
+  def setProperty(propertyPath: Path, propertyValue: String): Try[Unit] = {
+    trace(propertyPath, propertyValue)
+    val uri = path2Uri(propertyPath)
     debug(s"Smithers2 URI: $uri")
-    sendRequestAndCheckResponse(uri, "PUT")
-  }
-
-  /**
-   * Sets the playmode for playlist in a presentation. The path must point to the
-   * actual playlist resource.
-   *
-   * @param videoPlayListInPresentationPath path to the playlist in the presentation
-   * @param mode                            {menu|continuous} the to be played mode
-   * @return
-   */
-  def setPlayModeForVideoPlayListInPresentation(videoPlayListInPresentationPath: Path, mode: String): Try[Unit] = {
-    trace(videoPlayListInPresentationPath, mode)
-    val uri = path2Uri(videoPlayListInPresentationPath.resolve("properties").resolve("play-mode"))
-    debug(s"Smithers2 URI: $uri")
-    sendRequestAndCheckResponse(uri, "PUT")
+    sendRequestAndCheckResponse(uri, "PUT", propertyValue)
   }
 
   /**
@@ -158,11 +143,11 @@ trait Smithers2 {
       .flatMap(extractVideoRefFromPresentationForVideoId(id))
   }
 
-  private[springfield] def extractVideoRefFromPresentationForVideoId(id: String)(presentationXml: Elem): Try[String] = Try {
+  private[springfield] def extractVideoRefFromPresentationForVideoId(videoId: String)(presentationXml: Elem): Try[String] = Try {
     (presentationXml \\ "video")
-      .collectFirst { case node if (node \ "@id").text == id => (node \\ "@referid").text }
+      .collectFirst { case node if (node \ "@id").text == videoId => (node \\ "@referid").text }
       .map(relativizePathString)
-      .getOrElse(throw new IllegalStateException(s"No videoReference found for id '$id' in the presentation"))
+      .getOrElse(throw new IllegalStateException(s"No videoReference found for id '$videoId' in the presentation"))
   }
 
   private[springfield] def relativizePathString(path: String): String = {
@@ -174,7 +159,7 @@ trait Smithers2 {
 
   def putSubtitlesToVideo(videoRefId: Path, languageCode: String, fileName: String): Try[Unit] = {
     val uri = path2Uri(videoRefId.resolve("properties").resolve(s"webvtt_$languageCode"))
-    debug(s"Smithers2 URI: $uri")
+    debug(s"Smithers2 URI: $uri fileName: $fileName languageCode: $languageCode")
     sendRequestAndCheckResponse(uri, "PUT", fileName)
   }
 
@@ -238,31 +223,27 @@ trait Smithers2 {
   }
 
   /**
-   * First checks if the provided path is a presentation or a presentation in collection. If it is the latter it will first attempt to
-   * retrieve the referid to the presentation. It will than extract the playlist id('s) and assign the desired values to the playmode(s).
+   * Checks if the provided path is wrapped in a collection or not. If it is wrapped the presentation will be extracted
+   * else it just returns the presentation as is.
    *
-   * @param presentationReferId path to the presentation
-   * @param mode                string value of the desired playmode
-   * @return Success if the operation succeeded, failure otherwise
+   * @param presentationReferId
+   * @return path to the presentation
    */
-  def setPlayModeForPresentation(presentationReferId: Path, mode: String): Try[Unit] = {
-    for {
-      referId <- if (isCollection(presentationReferId)) getXmlFromPath(presentationReferId).map(extractPresentationFromCollection)
-                 else Success(presentationReferId)
-      _ <- getXmlFromPath(referId)
-        .map(extractVideoPlaylistIds)
-        .map(_.map(id => setPlayModeForVideoPlayListInPresentation(presentationReferId.resolve(s"videoplaylist").resolve(id), mode)))
-    } yield ()
+  def extractPresentationFromCollection(presentationReferId: Path): Try[Path] = {
+    if (isCollection(presentationReferId.subpath(0, presentationReferId.getNameCount - 2))) getXmlFromPath(presentationReferId)
+      .flatMap(xml => extractPresentationReferIdFromXML(xml, presentationReferId.getFileName.toString))
+    else Success(presentationReferId)
   }
 
-  def extractPresentationFromCollection(collectionXml: Elem): Path = {
-    Paths.get((collectionXml \\ "presentation" \ "@referid").text)
+  def extractPresentationReferIdFromXML(collectionXml: Elem, presentationName: String): Try[Path] = Try {
+    (collectionXml \\ "presentation")
+      .collectFirst { case e: Elem if (e \ "@id").text == presentationName => Paths.get((e \ "@referid").text) }
+      .getOrElse(throw new IllegalArgumentException(s"No presentation with name $presentationName"))
   }
 
-  def extractVideoPlaylistIds(presentationXml: Elem): List[String] = {
+  def extractVideoPlaylistIds(presentationXml: Elem): Seq[String] = {
     (presentationXml \\ "videoplaylist")
       .map(node => (node \ "@id").text)
-      .toList
   }
 
   def getPresentationReferIdPath(presentation: Path): Try[Path] = {
@@ -307,7 +288,7 @@ trait Smithers2 {
       Paths.get(smithers2BaseUri.getPath).resolve(getCompletePath(path)).toString, null, null)
   }
 
-  def http(method: String, uri: URI, body: String = null) = Try {
+  private def http(method: String, uri: URI, body: String = null) = Try {
     {
       if (body == null) Http(uri.toASCIIString)
       else Http(uri.toASCIIString).postData(body)
@@ -321,7 +302,7 @@ trait Smithers2 {
       .map(response => if (response.code == 200) checkResponseOk(response.body))
   }
 
-  def checkResponseOk(content: Array[Byte]): Try[Elem] = {
+  private def checkResponseOk(content: Array[Byte]): Try[Elem] = {
     /*
      * Never mind about the status codes. Springfield only returns 200 :-/
      */

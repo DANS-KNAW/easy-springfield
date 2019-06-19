@@ -19,8 +19,12 @@ import java.nio.file.Paths
 
 import org.scalatest.Inside
 
+import scala.util.Success
+import scala.xml.Elem
+
 class CreateSpringfieldActionsSpec extends TestSupportFixture with Inside with CreateSpringfieldActions {
-  val defaultDomain = "dans"
+  override val defaultDomain = "dans"
+  private val springFieldActionsNameSpaceUri: String = "http://easy.dans.knaw.nl/external/springfield-actions/"
 
   "createAddVideo" should "return a filled-in video element" in {
     val videoElem = createAddVideo(Paths.get("/my/source/vid.mp4"), "vid01.mp4")
@@ -59,6 +63,13 @@ class CreateSpringfieldActionsSpec extends TestSupportFixture with Inside with C
       case List(v1, v2) =>
         v1.attribute("target").get.head.text shouldBe "vid01.mp4"
         v2.attribute("target").get.head.text shouldBe "vid02.mp4"
+    }
+  }
+
+  "createSpringfieldActions" should "have a namespace in the root element action'" in {
+    val video = Video(Paths.get("a/path/to/somewhere"), "dans", "utest", "1", "2", "3", requireTicket = false)
+    createSpringfieldActions(Seq(video)) should matchPattern {
+      case Success(n: Elem) if n.namespace == springFieldActionsNameSpaceUri =>
     }
   }
 }

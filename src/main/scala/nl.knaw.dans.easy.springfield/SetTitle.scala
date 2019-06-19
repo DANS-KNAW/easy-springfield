@@ -13,23 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy
+package nl.knaw.dans.easy.springfield
 
-import java.nio.file.Path
+import java.nio.file.{ Path, Paths }
 
-package object springfield {
-  case class SpringfieldErrorException(errorCode: Int, message: String, details: String) extends Exception(s"($errorCode) $message: $details")
-  case class VideoPathWithId(path: Path, id: String)
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-  val MAX_NAME_LENGTH = 100
+import scala.util.Try
 
-  object AvType extends Enumeration {
-    type AvType = Value
-    val audio, video = Value
+trait SetTitle extends DebugEnhancedLogging {
+  this: Smithers2 =>
+
+  def setTitle(video: String, title: String, presentation: Path): Try[Unit] = {
+    for {
+      xml <- getXmlFromPath(presentation)
+      videoPath <- extractVideoRefFromPresentationForVideoId(video)(xml)
+      titlePath = toTitlePath(videoPath)
+      _ <- setProperty(titlePath, title)
+    } yield ()
   }
 
-  object Playmode extends Enumeration {
-    type Playmode = Value
-    val menu, continuous = Value
+  def toTitlePath(videoPath: String): Path = {
+    Paths.get(videoPath).resolve("properties").resolve("title")
   }
 }
