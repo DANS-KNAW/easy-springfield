@@ -24,7 +24,7 @@ import org.scalatest.matchers.should.Matchers
 
 class ReadmeSpec extends AnyFlatSpec with Matchers with CustomMatchers {
 
-  val mockedConfigurationProperties = new PropertiesConfiguration() {
+  val mockedConfigurationProperties: PropertiesConfiguration = new PropertiesConfiguration() {
     setDelimiterParsingDisabled(true)
     load(Paths.get("src/main/assembly/dist/cfg", "application.properties").toFile)
   }

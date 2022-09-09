@@ -38,6 +38,8 @@ object Command extends App
   with AddSubtitles
   with ListUsers
   with ListCollections
+  with ListFiles
+  with ListPresentations
   with GetStatus
   with GetProgressOfCurrentJobs
   with CreateSpringfieldActions
@@ -54,6 +56,12 @@ object Command extends App
   opts.verify()
 
   val result: Try[FeedBackMessage] = opts.subcommand match {
+    case Some(cmd @ opts.listPresentations) =>
+      debug("Calling list-presentations")
+      getPresentationList(cmd.user()).map(_.mkString(", "))
+    case Some(cmd @ opts.listFiles) =>
+      debug("Calling list-files")
+      getFileList(cmd.user(), cmd.presentationId()).map(_.mkString(", "))
     case Some(cmd @ opts.listUsers) =>
       debug("Calling list-users")
       getUserList(cmd.domain()).map(_.mkString(", "))
@@ -211,6 +219,20 @@ object Command extends App
       xml <- getXmlFromPath(Paths.get("domain", domain, "user", user, "collection"))
       collections <- Try { listCollections(xml) }
     } yield collections
+  }
+
+  private def getPresentationList(user: String): Try[Seq[(String,String)]] = {
+    for {
+      xml <- getXmlFromPath(Paths.get("user", user, "collection"))
+      presentations <- Try { listPresentations(xml) }
+    } yield presentations
+  }
+
+  private def getFileList(user: String, presentationId: String): Try[Seq[(Int, String,String, Boolean)]] = {
+    for {
+      xml <- getXmlFromPath(Paths.get("user", user))
+      files <- Try { listFiles(xml, presentationId.toInt) }
+    } yield files
   }
 
   private def getAllProgress(domain: String): Try[Map[JobRef, Progress]] = {

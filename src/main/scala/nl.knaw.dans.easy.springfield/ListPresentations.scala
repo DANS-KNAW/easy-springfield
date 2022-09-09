@@ -17,12 +17,13 @@ package nl.knaw.dans.easy.springfield
 
 import scala.xml.Elem
 
-trait ListCollections {
+trait ListPresentations {
 
-  def listCollections(parent: Elem): Seq[String] = {
+  def listPresentations(parent: Elem): Seq[(String,String)] = {
     for {
-      collection <- parent \ "collection"
-      if collection.attribute("id").isDefined
-    } yield collection.attribute("id").get.head.text
+      presentation <- parent \\ "presentation"
+      if presentation.attribute("id").isDefined
+      if presentation.attribute("referid").isDefined
+    } yield (presentation.attribute("id").get.head.text, presentation.attribute("referid").get.head.text)
   }
 }

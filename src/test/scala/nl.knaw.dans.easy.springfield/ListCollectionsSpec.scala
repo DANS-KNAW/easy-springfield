@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.springfield
 
 class ListCollectionsSpec extends TestSupportFixture with ListCollections {
-  "listUsers" should "return Seq of collection names" in {
+  "listCollections" should "return Seq of collection names" in {
     val parent = <fsxml>
       <collection id="coll01"/>
       <video id="video01" />
