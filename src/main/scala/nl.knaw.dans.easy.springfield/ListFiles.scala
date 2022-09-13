@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.springfield
 
+import scala.util.Try
 import scala.xml.Elem
 
 trait ListFiles {
@@ -23,13 +24,14 @@ trait ListFiles {
     for {
       presentation <- (parent \ "user" \ "presentation").theSeq
       if (presentation \@ "id") == presentationId.toString
-      avDef <- (presentation \\ "video").theSeq
+      avDef <- (presentation \ "videoplaylist").flatMap(_.nonEmptyChildren)
       if Seq("audio","video").contains(avDef.label)
       avType = avDef.label
       referId = (avDef \@ "referid")
       av <- parent \ "user" \ avType
-      if (av \@ "id") == (avDef \@ "referid").replaceAll(".*/","")
-      priv = (av \ "properties" \ "private").text.toBoolean
+      avNr = (avDef \@ "referid").replaceAll(".*/", "")
+      if (av \@ "id") == avNr
+      priv = Try((av \ "properties" \ "private").text.toBoolean).getOrElse(false)
       raw1 <- (av \ s"raw$avType").filter(raw => (raw \@ "id") == "1")
       raw2 <- (av \ s"raw$avType").filter(raw => (raw \@ "id") == "2")
       fileName1 = (raw1 \ "properties" \ "filename").text // assuming <original>true</original>

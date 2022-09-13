@@ -151,7 +151,7 @@
                     <mount>dans</mount>
                     <audiocodec>opus</audiocodec>
                     <audioduration>0.0</audioduration>
-                    <filename>Brabamamma_20200127_micaudio.mka</filename>
+                    <filename>Barbamamma_20200127_micaudio.mka</filename>
                     <audiobitrate>0</audiobitrate>
                     <audiochannels>2</audiochannels>
                     <status>done</status>
@@ -170,7 +170,7 @@
                     <audiocodec>aac</audiocodec>
                     <duration>3556.465667</duration>
                     <audioduration>3556.465667</audioduration>
-                    <filename>Brabamamma_20200127_micaudio.m4a</filename>
+                    <filename>Barbamamma_20200127_micaudio.m4a</filename>
                     <audiobitrate>124160</audiobitrate>
                     <reencode>false</reencode>
                     <job>/domain/dans/service/willie/queue/high/job/142</job>
@@ -195,7 +195,7 @@
                     <mount>dans</mount>
                     <audiocodec>opus</audiocodec>
                     <audioduration>0.0</audioduration>
-                    <filename>Brabamamma_20200127_audio.mka</filename>
+                    <filename>Barbamamma_20200127_audio.mka</filename>
                     <audiobitrate>0</audiobitrate>
                     <audiochannels>1</audiochannels>
                     <status>done</status>
@@ -214,7 +214,7 @@
                     <audiocodec>aac</audiocodec>
                     <duration>410.647125</duration>
                     <audioduration>410.647125</audioduration>
-                    <filename>Brabamamma_20200127_audio.m4a</filename>
+                    <filename>Barbamamma_20200127_audio.m4a</filename>
                     <audiobitrate>139678</audiobitrate>
                     <reencode>false</reencode>
                     <job>/domain/dans/service/willie/queue/high/job/143</job>
@@ -566,12 +566,12 @@
                 <properties>
                     <play-mode>continuous</play-mode>
                 </properties>
-                <audio id="Brabamamma_20200127_audio.mka" referid="/domain/dans/user/Barbapappa/audio/5">
+                <audio id="Barbamamma_20200127_audio.mka" referid="/domain/dans/user/Barbapappa/audio/5">
                     <properties>
                         <private>true</private>
                     </properties>
                 </audio>
-                <audio id="Brabamamma_20200127_micaudio.mka"
+                <audio id="Barbamamma_20200127_micaudio.mka"
                        referid="/domain/dans/user/Barbapappa/audio/4">
                     <properties>
                         <private>true</private>
@@ -627,7 +627,7 @@
                 <properties>
                     <play-mode>continuous</play-mode>
                 </properties>
-                <video id="Brabamamma_20200127_video.mkv" referid="/domain/dans/user/Barbapappa/video/7">
+                <video id="Barbamamma_20200127_video.mkv" referid="/domain/dans/user/Barbapappa/video/7">
                     <properties>
                         <private>true</private>
                     </properties>
@@ -1167,7 +1167,7 @@
                     <audiocodec>opus</audiocodec>
                     <duration>3523.688</duration>
                     <audioduration>3523.688</audioduration>
-                    <filename>Brabamamma_20200127_video.mkv</filename>
+                    <filename>Barbamamma_20200127_video.mkv</filename>
                     <pixelaspect>1.7777777777777777</pixelaspect>
                     <audiobitrate>0</audiobitrate>
                     <width>720</width>
@@ -1198,7 +1198,7 @@
                     <format>H.264</format>
                     <metadata_file>/springfield/flanders/temp/1628347987100.dat</metadata_file>
                     <mount>dans</mount>
-                    <filename>Brabamamma_20200127_video.mp4</filename>
+                    <filename>Barbamamma_20200127_video.mp4</filename>
                     <audiobitrate>64119</audiobitrate>
                     <wantedframerate>25</wantedframerate>
                     <reencode>false</reencode>
@@ -1293,7 +1293,7 @@
         </video>
         <video id="9">
             <properties>
-                <private>true</private>
+                <private>nonsense</private>
             </properties>
             <rawvideo id="1">
                 <properties>
@@ -1502,9 +1502,6 @@
             </screens>
         </video>
         <video id="12">
-            <properties>
-                <private>true</private>
-            </properties>
             <rawvideo id="1">
                 <properties>
                     <extension>mkv</extension>
