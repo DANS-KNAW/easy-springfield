@@ -81,7 +81,7 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
     val user: ScallopOption[String] = trailArg(name = "user",
       descr = "the user whose presentations to list",
       required = true,
-      default = Some(config.properties.getString("springfield.default-domain")))
+    )
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(listPresentations)
@@ -91,11 +91,11 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
     val user: ScallopOption[String] = trailArg(name = "user",
       descr = "the user whose files to list",
       required = true,
-      default = Some(config.properties.getString("springfield.default-domain")))
+    )
     val presentationId: ScallopOption[String] = trailArg(name = "presentation-id",
       descr = "the presentation-id of which to list the files",
       required = true,
-      default = Some(config.properties.getString("springfield.default-domain")))
+    )
     footer(SUBCOMMAND_SEPARATOR)
   }
   addSubcommand(listFiles)

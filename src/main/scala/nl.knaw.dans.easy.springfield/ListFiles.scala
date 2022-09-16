@@ -37,7 +37,7 @@ trait ListFiles {
       fileName1 = (raw1 \ "properties" \ "filename").text // assuming <original>true</original>
       fileName2 = (raw2 \ "properties" \ "filename").text
     } yield {
-      (presentationId, fileName1, s"$referId/raw$avType/1/${ fileName2 }", priv)
+      (presentationId, fileName1, s"$referId/raw$avType/2/${ fileName2 }", priv)
     }
   }
 }

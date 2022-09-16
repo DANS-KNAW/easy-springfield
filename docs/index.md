@@ -224,18 +224,17 @@ ARGUMENTS
 
          Subcommand: list-presentations - Lists presentations for a given user
           -h, --help   Show help message
-         
+
           trailing arguments:
-           user (required)   the user whose presentations to list (default = dans)
+           user (required)   the user whose presentations to list
          ---
-         
+
          Subcommand: list-files - Lists file for a given user
           -h, --help   Show help message
           
           trailing arguments:
-           user (required)              the user whose files to list (default = dans)
+           user (required)              the user whose files to list
            presentation-id (required)   the presentation-id of which to list the files
-           (default = dans)
          ---
 
         Subcommand: list-users - Lists users in a given domain
