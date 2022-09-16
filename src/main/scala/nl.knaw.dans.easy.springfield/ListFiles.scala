@@ -20,14 +20,14 @@ import scala.xml.Elem
 
 trait ListFiles {
 
-  def listFiles(parent: Elem, presentationId: Int): Seq[(Int, String,String, Boolean)] = {
+  def listFiles(parent: Elem, presentationId: String): Seq[(String, String,String, Boolean)] = {
     for {
       presentation <- (parent \ "user" \ "presentation").theSeq
-      if (presentation \@ "id") == presentationId.toString
+      if (presentation \@ "id") == presentationId.replaceAll(".*/","")
       avDef <- (presentation \ "videoplaylist").flatMap(_.nonEmptyChildren)
       if Seq("audio","video").contains(avDef.label)
       avType = avDef.label
-      referId = (avDef \@ "referid")
+      referId = avDef \@ "referid"
       av <- parent \ "user" \ avType
       avNr = (avDef \@ "referid").replaceAll(".*/", "")
       if (av \@ "id") == avNr

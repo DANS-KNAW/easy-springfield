@@ -228,10 +228,10 @@ object Command extends App
     } yield presentations
   }
 
-  private def getFileList(user: String, presentationId: String): Try[Seq[(Int, String,String, Boolean)]] = {
+  private def getFileList(user: String, presentationId: String): Try[Seq[(String, String,String, Boolean)]] = {
     for {
       xml <- getXmlFromPath(Paths.get("user", user))
-      files <- Try { listFiles(xml, presentationId.toInt) }
+      files <- Try { listFiles(xml, presentationId) }
     } yield files
   }
 
