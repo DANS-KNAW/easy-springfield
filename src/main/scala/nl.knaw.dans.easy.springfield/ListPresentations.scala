@@ -21,9 +21,9 @@ trait ListPresentations {
 
   def listPresentations(parent: Elem): Seq[(String,String)] = {
     for {
-      presentation <- parent \\ "presentation"
-      if presentation.attribute("id").isDefined
-      if presentation.attribute("referid").isDefined
-    } yield (presentation.attribute("id").get.head.text, presentation.attribute("referid").get.head.text)
+      presentation <- parent \ "user" \ "collection" \ "presentation"
+      datasetId = presentation \@ "id"
+      referId = presentation \@ "referid"
+    } yield (datasetId, referId)
   }
 }

@@ -61,7 +61,7 @@ object Command extends App
       getPresentationList(cmd.user()).map(_.mkString(", "))
     case Some(cmd @ opts.listFiles) =>
       debug("Calling list-files")
-      getFileList(cmd.user(), cmd.presentationId()).map(_.mkString(", "))
+      getFileList(cmd.user()).map(_.mkString(", "))
     case Some(cmd @ opts.listUsers) =>
       debug("Calling list-users")
       getUserList(cmd.domain()).map(_.mkString(", "))
@@ -228,10 +228,10 @@ object Command extends App
     } yield presentations
   }
 
-  private def getFileList(user: String, presentationId: String): Try[Seq[(String, String,String, Boolean)]] = {
+  private def getFileList(user: String): Try[Seq[(String, String, String,String, Boolean)]] = {
     for {
       xml <- getXmlFromPath(Paths.get("user", user))
-      files <- Try { listFiles(xml, presentationId) }
+      files <- Try { listFiles(xml) }
     } yield files
   }
 

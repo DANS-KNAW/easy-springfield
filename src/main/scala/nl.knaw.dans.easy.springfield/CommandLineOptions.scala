@@ -32,7 +32,7 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
        |$printedName list-users [<domain>]
        |$printedName list-collections <user> [<domain>]
        |$printedName list-presentations <user>
-       |$printedName list-files <user> <presentation-id>
+       |$printedName list-files <user>
        |$printedName create-user <user> [<domain>]
        |$printedName create-collection [-t, --title <arg>] [-d, --description <arg>] \\
        |    <collection> <user> [<domain>]
@@ -90,10 +90,6 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
     descr("Lists file for a given user")
     val user: ScallopOption[String] = trailArg(name = "user",
       descr = "the user whose files to list",
-      required = true,
-    )
-    val presentationId: ScallopOption[String] = trailArg(name = "presentation-id",
-      descr = "the presentation-id of which to list the files",
       required = true,
     )
     footer(SUBCOMMAND_SEPARATOR)

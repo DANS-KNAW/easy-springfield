@@ -10,7 +10,7 @@ SYNOPSIS
     easy-springfield list-users [<domain>]
     easy-springfield list-collections <user> [<domain>]
     easy-springfield list-presentations <user>
-    easy-springfield list-files <user> <presentation-id>
+    easy-springfield list-files <user>
     easy-springfield create-user <user> [<domain>]
     easy-springfield create-collection [-t, --title <arg>] [-d, --description <arg>] \
         <collection> <user> [<domain>]
@@ -233,8 +233,7 @@ ARGUMENTS
           -h, --help   Show help message
           
           trailing arguments:
-           user (required)              the user whose files to list
-           presentation-id (required)   the presentation-id of which to list the files
+           user (required)   the user whose files to list
          ---
 
         Subcommand: list-users - Lists users in a given domain

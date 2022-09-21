@@ -20,16 +20,20 @@ import scala.xml.Elem
 
 trait ListFiles {
 
-  def listFiles(parent: Elem, presentationId: String): Seq[(String, String,String, Boolean)] = {
+  def listFiles(parent: Elem): Seq[(String, String, String,String, Boolean)] = {
     for {
-      presentation <- (parent \ "user" \ "presentation").theSeq
-      if (presentation \@ "id") == presentationId.replaceAll(".*/","")
+      presentationInCollection <- parent \ "user" \ "collection" \ "presentation"
+      datasetId = presentationInCollection \@ "id"
+      presentationReferId = presentationInCollection \@ "referid"
+      presentationNr = presentationReferId.replaceAll(".*/", "")
+      presentation <- parent \ "user" \ "presentation"
+      if (presentation \@ "id") == presentationNr
       avDef <- (presentation \ "videoplaylist").flatMap(_.nonEmptyChildren)
       if Seq("audio","video").contains(avDef.label)
       avType = avDef.label
-      referId = avDef \@ "referid"
+      avReferId = avDef \@ "referid"
+      avNr = avReferId.replaceAll(".*/", "")
       av <- parent \ "user" \ avType
-      avNr = (avDef \@ "referid").replaceAll(".*/", "")
       if (av \@ "id") == avNr
       priv = Try((av \ "properties" \ "private").text.toBoolean).getOrElse(false)
       raw1 <- (av \ s"raw$avType").filter(raw => (raw \@ "id") == "1")
@@ -37,7 +41,7 @@ trait ListFiles {
       fileName1 = (raw1 \ "properties" \ "filename").text // assuming <original>true</original>
       fileName2 = (raw2 \ "properties" \ "filename").text
     } yield {
-      (presentationId, fileName1, s"$referId/raw$avType/2/${ fileName2 }", priv)
+      (datasetId, presentationReferId, fileName1, s"$avReferId/raw$avType/2/$fileName2", priv)
     }
   }
 }
