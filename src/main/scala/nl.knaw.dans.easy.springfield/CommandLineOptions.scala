@@ -16,8 +16,7 @@
 package nl.knaw.dans.easy.springfield
 
 import java.nio.file.{ Path, Paths }
-
-import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, listArgConverter, singleArgConverter }
+import org.rogach.scallop.{ ScallopConf, ScallopOption, Subcommand, ValueConverter, listArgConverter, singleArgConverter }
 
 class CommandLineOptions(args: Array[String], config: Configuration) extends ScallopConf(args) {
 
@@ -32,6 +31,8 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
     s"""
        |$printedName list-users [<domain>]
        |$printedName list-collections <user> [<domain>]
+       |$printedName list-presentations <user>
+       |$printedName list-files <user>
        |$printedName create-user <user> [<domain>]
        |$printedName create-collection [-t, --title <arg>] [-d, --description <arg>] \\
        |    <collection> <user> [<domain>]
@@ -68,12 +69,32 @@ class CommandLineOptions(args: Array[String], config: Configuration) extends Sca
        |
        |""".stripMargin)
 
-  private implicit val fileConverter = singleArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
-  private implicit val pathsConverter = listArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
+  private implicit val fileConverter: ValueConverter[Path] = singleArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
+  private implicit val pathsConverter: ValueConverter[List[Path]] = listArgConverter[Path](s => Paths.get(resolveTildeToHomeDir(s)))
 
   private def resolveTildeToHomeDir(s: String): String =
     if (s.startsWith("~")) s.replaceFirst("~", System.getProperty("user.home"))
     else s
+
+  val listPresentations = new Subcommand("list-presentations") {
+    descr("Lists presentations for a given user")
+    val user: ScallopOption[String] = trailArg(name = "user",
+      descr = "the user whose presentations to list",
+      required = true,
+    )
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(listPresentations)
+
+  val listFiles = new Subcommand("list-files") {
+    descr("Lists file for a given user")
+    val user: ScallopOption[String] = trailArg(name = "user",
+      descr = "the user whose files to list",
+      required = true,
+    )
+    footer(SUBCOMMAND_SEPARATOR)
+  }
+  addSubcommand(listFiles)
 
   val listUsers = new Subcommand("list-users") {
     descr("Lists users in a given domain")
