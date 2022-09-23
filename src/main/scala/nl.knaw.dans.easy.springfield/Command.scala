@@ -58,10 +58,10 @@ object Command extends App
   val result: Try[FeedBackMessage] = opts.subcommand match {
     case Some(cmd @ opts.listPresentations) =>
       debug("Calling list-presentations")
-      getPresentationList(cmd.user()).map(_.mkString(", "))
+      getPresentationList(cmd.user()).map(_.map(_.toString().replaceAll("[()]", "")).mkString("\n", "\n", ""))
     case Some(cmd @ opts.listFiles) =>
       debug("Calling list-files")
-      getFileList(cmd.user()).map(_.mkString(", "))
+      getFileList(cmd.user()).map(_.map(_.toString().replaceAll("[()]", "")).mkString("\n", "\n", ""))
     case Some(cmd @ opts.listUsers) =>
       debug("Calling list-users")
       getUserList(cmd.domain()).map(_.mkString(", "))
@@ -223,7 +223,7 @@ object Command extends App
 
   private def getPresentationList(user: String): Try[Seq[(String,String)]] = {
     for {
-      xml <- getXmlFromPath(Paths.get("user", user, "collection"))
+      xml <- getXmlFromPath(Paths.get("user", user))
       presentations <- Try { listPresentations(xml) }
     } yield presentations
   }
