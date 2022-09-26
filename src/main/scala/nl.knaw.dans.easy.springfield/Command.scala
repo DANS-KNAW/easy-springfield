@@ -59,10 +59,10 @@ object Command extends App
   val result: Try[FeedBackMessage] = opts.subcommand match {
     case Some(cmd @ opts.listPresentations) =>
       debug("Calling list-presentations")
-      getPresentationList(cmd.user(), System.out).map(_.size + " presentations")
+      getPresentationList(cmd.user(), Console.out).map(_.size + " presentations")
     case Some(cmd @ opts.listFiles) =>
       debug("Calling list-files")
-      getFileList(cmd.user(), System.out).map(_.size + " files")
+      getFileList(cmd.user(), Console.out).map(_.size + " files")
     case Some(cmd @ opts.listUsers) =>
       debug("Calling list-users")
       getUserList(cmd.domain()).map(_.mkString(", "))
