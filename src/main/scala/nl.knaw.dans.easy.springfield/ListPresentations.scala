@@ -15,12 +15,11 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import scala.collection.immutable
 import scala.xml.Elem
 
 trait ListPresentations {
 
-  def listPresentations(parent: Elem): immutable.Seq[Seq[String]] = {
+  def listPresentations(parent: Elem): Seq[Seq[String]] = {
     for {
       presentation <- parent \ "user" \ "collection" \ "presentation"
       datasetId = presentation \@ "id"
