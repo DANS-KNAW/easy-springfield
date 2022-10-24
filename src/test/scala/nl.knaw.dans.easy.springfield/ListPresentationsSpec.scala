@@ -41,8 +41,8 @@ class ListPresentationsSpec extends TestSupportFixture with ListPresentations {
     </fsxml>
 
     listPresentations(parent) shouldBe Seq(
-      ("easy-dataset:218799", "/domain/dans/user/Barbapappa/presentation/4"),
-      ("easy-dataset:218800", "/domain/dans/user/Barbapappa/presentation/5"),
+      Seq("easy-dataset:218799", "/domain/dans/user/Barbapappa/presentation/4"),
+      Seq("easy-dataset:218800", "/domain/dans/user/Barbapappa/presentation/5"),
     )
   }
 

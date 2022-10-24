@@ -19,11 +19,14 @@ import scala.xml.Elem
 
 trait ListPresentations {
 
-  def listPresentations(parent: Elem): Seq[(String,String)] = {
+  def listPresentations(parent: Elem): Seq[Seq[String]] = {
     for {
       presentation <- parent \ "user" \ "collection" \ "presentation"
       datasetId = presentation \@ "id"
       referId = presentation \@ "referid"
-    } yield (datasetId, referId)
+    } yield Seq(datasetId, referId)
   }
+}
+object ListPresentations {
+  val csvHeaders = Seq("dataset-id", "referId")
 }

@@ -15,18 +15,19 @@
  */
 package nl.knaw.dans.easy.springfield
 
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
-import java.nio.file.{ Path, Paths }
-import java.util.UUID
-
 import nl.knaw.dans.easy.springfield.AvType._
 import nl.knaw.dans.easy.springfield.Playmode.Playmode
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import org.apache.commons.csv.CSVFormat
 import org.apache.commons.lang.BooleanUtils
 import resource.managed
 
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Path, Paths }
+import java.util.UUID
+import scala.collection.JavaConverters.asJavaIterableConverter
 import scala.io.StdIn
 import scala.util.{ Failure, Success, Try }
 import scala.xml.{ PrettyPrinter, XML }
@@ -58,10 +59,10 @@ object Command extends App
   val result: Try[FeedBackMessage] = opts.subcommand match {
     case Some(cmd @ opts.listPresentations) =>
       debug("Calling list-presentations")
-      getPresentationList(cmd.user()).map(_.mkString(", "))
+      getPresentationList(cmd.user(), Console.out).map(_.size + " presentations")
     case Some(cmd @ opts.listFiles) =>
       debug("Calling list-files")
-      getFileList(cmd.user()).map(_.mkString(", "))
+      getFileList(cmd.user(), Console.out).map(_.size + " files")
     case Some(cmd @ opts.listUsers) =>
       debug("Calling list-users")
       getUserList(cmd.domain()).map(_.mkString(", "))
@@ -221,17 +222,28 @@ object Command extends App
     } yield collections
   }
 
-  private def getPresentationList(user: String): Try[Seq[(String,String)]] = {
+  private def printCsv(headers: Seq[String], rows: Seq[Seq[Any]], out: Appendable): Unit = {
+    val printer = CSVFormat.RFC4180
+      .withDelimiter(',')
+      .withRecordSeparator('\n')
+      .withHeader(headers: _*)
+      .print(out)
+    rows.foreach(row => printer.printRecord(row.asJava))
+  }
+
+  private def getPresentationList(user: String, out: Appendable): Try[Seq[Seq[String]]] = {
     for {
-      xml <- getXmlFromPath(Paths.get("user", user, "collection"))
+      xml <- getXmlFromPath(Paths.get("user", user))
       presentations <- Try { listPresentations(xml) }
+      _ <- Try { printCsv(ListPresentations.csvHeaders, presentations, out) }
     } yield presentations
   }
 
-  private def getFileList(user: String): Try[Seq[(String, String, String,String, Boolean)]] = {
+  private def getFileList(user: String, out: Appendable): Try[Seq[Seq[Any]]] = {
     for {
       xml <- getXmlFromPath(Paths.get("user", user))
       files <- Try { listFiles(xml) }
+      _ <- Try { printCsv(ListFiles.csvHeaders, files, out) }
     } yield files
   }
 

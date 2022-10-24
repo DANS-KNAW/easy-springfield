@@ -20,7 +20,7 @@ import scala.xml.Elem
 
 trait ListFiles {
 
-  def listFiles(parent: Elem): Seq[(String, String, String,String, Boolean)] = {
+  def listFiles(parent: Elem): Seq[Seq[Any]] = {
     for {
       presentationInCollection <- parent \ "user" \ "collection" \ "presentation"
       datasetId = presentationInCollection \@ "id"
@@ -29,7 +29,7 @@ trait ListFiles {
       presentation <- parent \ "user" \ "presentation"
       if (presentation \@ "id") == presentationNr
       avDef <- (presentation \ "videoplaylist").flatMap(_.nonEmptyChildren)
-      if Seq("audio","video").contains(avDef.label)
+      if Seq("audio", "video").contains(avDef.label)
       avType = avDef.label
       avReferId = avDef \@ "referid"
       avNr = avReferId.replaceAll(".*/", "")
@@ -41,7 +41,10 @@ trait ListFiles {
       fileName1 = (raw1 \ "properties" \ "filename").text // assuming <original>true</original>
       fileName2 = (raw2 \ "properties" \ "filename").text
     } yield {
-      (datasetId, presentationReferId, fileName1, s"$avReferId/raw$avType/2/$fileName2", priv)
+      Seq(datasetId, presentationReferId, fileName1, s"$avReferId/raw$avType/2/$fileName2", priv)
     }
   }
+}
+object ListFiles {
+  val csvHeaders = Seq("dataset-id", "presentation-referId", "fileName1", "fileName2", "private")
 }
